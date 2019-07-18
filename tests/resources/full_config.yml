@@ -1,0 +1,112 @@
+settings:
+  name: instance name
+
+loggers:
+  - type: web
+    min_level: info
+    max_level: error
+    method: POST
+    url: https://some/url1
+    headers:
+      Content-Type: application/json
+      TestHeader1: Value1
+    body: '{"message":"message 1"}'
+    auth:
+      type: basic
+      username: admin
+      password: ${WEB_LOGGER_PASSWORD}
+
+  - type: web
+    method: POST
+    url: 'https://some/url2?name={{ name }}&message={{ message }}'
+    headers:
+      Content-Type: application/json
+      TestHeader2: '{{ name }} {{ message }}'
+    body: '{"message":"{{ message }}","name":"{{ name }}"}'
+
+  - type: web
+    method: GET
+    url: 'https://some/url3?name={{ name }}&message={{ message }}'
+    headers:
+      Content-Type: application/json
+      TestHeader3: '{{ name }} {{ message }}'
+
+servers:
+  - name: server 1
+    type: ssh
+    location: /some/path1
+    connection:
+      host: hostname1
+      port: 2222
+      username: username1
+      key: /path/to/id_rsa1
+
+  - name: server 2
+    type: ssh
+    location: /some/path2
+    connection:
+      host: hostname2
+      port: 2223
+      username: username2
+      key: /path/to/id_rsa2
+    rotation_strategy:
+      daily: 20
+      monthly: 10
+      yearly: 2
+
+backup_items:
+  files:
+    includes:
+      - /path/to/include1
+      - /path/to/include2
+    excludes:
+      - /path/to/include/exclude
+
+  databases:
+    includes:
+      - name: name1
+        type: mysql
+        username: username1
+        password: password1
+        database: database1
+        connection:
+          type: local
+          port: 3360
+        rotation_strategy:
+          daily: 30
+          monthly: 15
+          yearly: 3
+
+      - name: name2
+        type: mysql
+        username: username2
+        password: password2
+        database: database2
+        connection:
+          type: remote
+          host: 192.168.1.1
+          port: 3365
+
+      - name: name3
+        type: mysql
+        username: username3
+        password: ${MYSQL_PASSWORD}
+        database: database3
+        connection:
+          type: docker
+          container: container3
+          port: 3370
+
+  docker:
+    data_volumes:
+      - data_container_1
+      - data_container_2
+    rotation_strategy:
+      daily: 40
+      monthly: 20
+      yearly: 4
+
+rotation_strategy:
+  daily: 10
+  monthly: 5
+  yearly: 1

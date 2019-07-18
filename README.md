@@ -1,6 +1,8 @@
 # backee
 
-backee is a backup script writted in python. It can be configured using YAML file.
+backee is a script for backup directories, files, databases and docker data volumes.
 
-## config file
+## Config file
+
+backee is configured using yaml config file. Please refer to `config_template.yml` on how to use it.
 

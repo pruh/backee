@@ -1,0 +1,106 @@
+# Environment variables that are specified as ${ENV_VARIABLE} are replaced at runtime
+# Additionally logger will replace {{ name }} with name from this config and {{ message }} with message itself.
+
+settings:
+  name: test # name that will be used in many places, like root folder on remote host, or in logs
+
+loggers:
+  - type: file
+    file: /some/file
+    format: "('%(asctime)s [%(threadName)18s][%(levelname)8s] %(message)s')" # https://docs.python.org/3/library/logging.html#logrecord-attributes
+    min_level: debug # default debug, allowed: debug, info, warning, error, critical
+    max_level: error # default critical
+    max_size: 1048576 # in bytes, default is 1 MB
+    backup_count: 1 # default 0
+
+  - type: web # for web loggers {{ name }} and {{ message }} will be replaced in url, headers and body
+    min_level: info # default debug
+    max_level: error # default critical
+    method: POST # POST or GET
+    url: https://some/url
+    headers: # optional
+      Content-Type: application/json
+    body: '{"group_id":123,"message":"{{ name }} {{ message }}"}'
+    auth: # none if omitted
+      type: basic # none or basic
+      username: admin
+      password: ${WEB_LOGGER_PASSWORD}
+
+servers:
+  - name: server1
+    type: ssh
+    location: /some/path
+    connection: # password authentication is not supported
+      host: hostname
+      port: 22 # defaults to 22
+      username: username # defaults to empty
+      key: /path/to/id_rsa # system default location is used by default
+    rotation_strategy: # optional, server rotation strategy, overwrites global, but can be overwritten by item rotation strategy
+      daily: 40 # default 1
+      monthly: 20 # default 0
+      yearly: 4 # default 0
+
+  - name: server2
+    type: ssh
+    location: /some/path
+    connection:
+      host: google.com
+      port: 22
+      username: root
+      key: /path/to/is_rsa
+
+backup_items:
+  files:
+    includes: # optional
+      - /path/to/include
+    excludes: # optional
+      - /path/to/include/exclude
+
+  databases:
+    includes:
+      - name: name1
+        type: mysql
+        username: username
+        password: ${MYSQL_PASSWORD}
+        database: database_name
+        connection:
+          type: local
+          port: 3306 # default 3306
+        rotation_strategy: # optional, overwrites any other rotation strategy
+          daily: 40 # default 1
+          monthly: 20 # default 0
+          yearly: 4 # default 0
+
+      - name: name2
+        type: mysql
+        username: username
+        password: ${MYSQL_PASSWORD}
+        database: database_name
+        connection:
+          type: remote
+          host: 192.168.1.1 # default 127.0.0.1
+          port: 3306 # default 3306
+
+      - name: name3
+        type: mysql
+        username: username
+        password: ${MYSQL_PASSWORD}
+        database: database_name
+        connection:
+          type: docker
+          container: container_name
+          port: 3370
+
+  docker:
+    data_volumes: # output of docker volume ls -q
+      - data_container_1
+      - data_container_2
+    rotation_strategy: # optional, overwrites any other rotation strategy
+      daily: 40 # default 1
+      monthly: 20 # default 0
+      yearly: 4 # default 0
+
+rotation_strategy: # optional, global rotation strategy applied to everything, but can be overwritten by server or item rotation strategy
+  daily: 30 # default 1
+  monthly: 6 # default 0
+  yearly: 1 # default 0
