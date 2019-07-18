@@ -1,11 +1,9 @@
-import abc
-
 from dataclasses import dataclass
 from typing import Dict
 
 
 @dataclass
-class DbConnector(abc.ABC):
+class DbConnector(object):
     port: int
 
 

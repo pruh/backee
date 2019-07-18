@@ -16,8 +16,7 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
     Tests for `backee/parser/items_parser.py`.
     """
 
-    @unittest.mock.patch('os.mkdir')
-    def test_file_items_all_values_parsed(self, mkdir):
+    def test_file_items_all_values_parsed(self):
         """
         All possible values are set and parsed correctly.
         """
@@ -33,8 +32,7 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         self.assertEqual(expected_file_item, parsed_file_item,
                          msg='full file item is parsed incorrectly')
 
-    @unittest.mock.patch('os.mkdir')
-    def test_file_items_default_values_parsed(self, mkdir):
+    def test_file_items_default_values_parsed(self):
         """
         Only default values are set and parsed correctly.
         """
@@ -47,8 +45,7 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         self.assertEqual(expected_file_item, parsed_file_item,
                          msg='default file item is parsed incorrectly')
 
-    @unittest.mock.patch('os.mkdir')
-    def test_local_database_values_parsed(self, mkdir):
+    def test_local_database_values_parsed(self):
         """
         All possible values are set and parsed correctly.
         """
@@ -67,8 +64,7 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         self.assertEqual(expected_database, parsed_database_items,
                          msg='full database items are parsed incorrectly')
 
-    @unittest.mock.patch('os.mkdir')
-    def test_remote_database_values_parsed(self, mkdir):
+    def test_remote_database_values_parsed(self):
         """
         All possible values are set and parsed correctly.
         """
@@ -87,8 +83,7 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         self.assertEqual(expected_database, parsed_database_items,
                          msg='full database items are parsed incorrectly')
 
-    @unittest.mock.patch('os.mkdir')
-    def test_docker_database_values_parsed(self, mkdir):
+    def test_docker_database_values_parsed(self):
         """
         All possible values are set and parsed correctly.
         """
@@ -107,8 +102,7 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         self.assertEqual(expected_database, parsed_database_items,
                          msg='full database items are parsed incorrectly')
 
-    @unittest.mock.patch('os.mkdir')
-    def test_docker_items_all_values_parsed(self, mkdir):
+    def test_docker_items_all_values_parsed(self):
         """
         All possible values are set and parsed correctly.
         """

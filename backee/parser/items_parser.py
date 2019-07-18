@@ -45,7 +45,8 @@ def __parse_mysql_item(item: Dict[str, Any], rotation_strategy: RotationStrategy
     )
 
 
-def __parse_database_backup_item(item: Dict[str, str], rotation_strategy: RotationStrategy) -> DatabaseBackupItem:
+def __parse_database_backup_item(item: Dict[str, str],
+                                 rotation_strategy: RotationStrategy) -> DatabaseBackupItem:
     supported_types = {
         "mysql": __parse_mysql_item
     }
@@ -57,14 +58,17 @@ def __parse_database_backup_item(item: Dict[str, str], rotation_strategy: Rotati
     return supported_types[db_type](item=item, rotation_strategy=rotation_strategy)
 
 
-def __parse_databases(item: Optional[Dict[str, Any]], rotation_strategy: RotationStrategy) -> Tuple[DatabaseBackupItem]:
+def __parse_databases(item: Optional[Dict[str, Any]],
+                      rotation_strategy: RotationStrategy) -> Tuple[DatabaseBackupItem]:
     if item is None:
         return ((),)
 
-    return tuple(__parse_database_backup_item(item=x, rotation_strategy=rotation_strategy) for x in item.get('includes'))
+    return tuple(__parse_database_backup_item(item=x,
+                                              rotation_strategy=rotation_strategy) for x in item.get('includes'))
 
 
-def __parse_docker_volumes(item: Optional[Dict[str, List[str]]], rotation_strategy: RotationStrategy) -> DockerDataVolumesBackupItem:
+def __parse_docker_volumes(item: Optional[Dict[str, List[str]]],
+                           rotation_strategy: RotationStrategy) -> DockerDataVolumesBackupItem:
     if item is None:
         return DockerDataVolumesBackupItem(
             volumes=((),),
@@ -80,7 +84,8 @@ def __parse_docker_volumes(item: Optional[Dict[str, List[str]]], rotation_strate
     )
 
 
-def parse_items(items: Optional[Tuple[Dict[str, Any]]], rotation_strategy: RotationStrategy) -> Tuple[BackupItem]:
+def parse_items(items: Optional[Tuple[Dict[str, Any]]],
+                rotation_strategy: RotationStrategy) -> Tuple[BackupItem]:
     if items is None:
         return ((),)
 

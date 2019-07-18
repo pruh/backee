@@ -6,13 +6,18 @@ from requests.auth import HTTPBasicAuth
 
 from concurrent.futures import ThreadPoolExecutor
 
-from typing import Dict, Optional
+from typing import Dict, Tuple, Optional, Any
 
 
 class WebHandler(logging.Handler):
 
-    def __init__(self, method: str, url: str, headers: Dict[str, str],
-                 body: str, auth: Optional[Dict[str, str]], name: str):
+    def __init__(self,
+                 method: str,
+                 url: str,
+                 headers: Dict[str, str],
+                 body: str,
+                 auth: Optional[Dict[str, str]],
+                 name: str):
 
         name_pattern = '{{ name }}'
 
@@ -44,7 +49,10 @@ class WebHandler(logging.Handler):
         return original.replace(
             pattern, new_text.replace("\\", "\\\\").replace('"', '\\"'))
 
-    def __replace_pattern_in_map(self, pattern: str, new_text: str, original_dict: Dict[str, str]):
+    def __replace_pattern_in_map(self,
+                                 pattern: str,
+                                 new_text: str,
+                                 original_dict: Dict[str, str]):
         new_dict = {}
         for k, v in original_dict.items():
             new_k = self.__replace_pattern(
@@ -129,7 +137,7 @@ class WebHandler(logging.Handler):
         """
         return f'<{self.__class__.__name__} {self._url} ({logging.getLevelName(self.level)})>'
 
-    def __members(self):
+    def __members(self) -> Tuple[Any]:
         return (self.level,
                 self._method,
                 self._url,
@@ -140,11 +148,11 @@ class WebHandler(logging.Handler):
                 self._auth.password if self._auth else None,
                 tuple(self.filters))
 
-    def __eq__(self, other):
+    def __eq__(self, other) -> bool:
         if type(other) is type(self):
             return self.__members() == other.__members()
         else:
             return False
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(self.__members())

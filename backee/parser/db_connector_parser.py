@@ -3,21 +3,27 @@ from typing import Dict, Any
 from backee.model.db_connectors import DbConnector, RemoteConnector, DockerConnector
 
 
-def __parse_local(item: Dict[str, Any], default_host: str, def_port: int) -> RemoteConnector:
+def __parse_local(item: Dict[str, Any],
+                  default_host: str,
+                  def_port: int) -> RemoteConnector:
     return RemoteConnector(
         hostname=default_host,
         port=item.get('port', def_port)
     )
 
 
-def __parse_remote(item: Dict[str, Any], default_host: str, def_port: int) -> RemoteConnector:
+def __parse_remote(item: Dict[str, Any],
+                   default_host: str,
+                   def_port: int) -> RemoteConnector:
     return RemoteConnector(
         hostname=item.get('host', default_host),
         port=item.get('port', def_port)
     )
 
 
-def __parse_docker(item: Dict[str, Any], default_host: str, def_port: int) -> DockerConnector:
+def __parse_docker(item: Dict[str, Any],
+                   default_host: str,
+                   def_port: int) -> DockerConnector:
     return DockerConnector(
         container=item['container'],
         port=item.get('port', def_port)
