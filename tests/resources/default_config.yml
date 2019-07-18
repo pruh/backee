@@ -1,0 +1,18 @@
+settings:
+  name: instance name
+
+loggers:
+  - type: web
+    method: POST
+    url: https://some/url2
+    body: '{"message":"message 2"}'
+
+servers:
+  - name: server 2
+    type: ssh
+    location: /some/path2
+    connection:
+      host: hostname2
+
+backup_items:
+  files:
