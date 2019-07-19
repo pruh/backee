@@ -11,7 +11,6 @@ class ConfigParserTestCase(ConfigMixin, unittest.TestCase):
     """
     Tests for `backee/parser/config_parser.py`.
     """
-
     @mock.patch.dict('os.environ', {'WEB_LOGGER_PASSWORD': 'ABC123qwe'})
     def test_env_variables_replaced(self):
         """
