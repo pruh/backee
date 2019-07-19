@@ -17,7 +17,6 @@ class LoggersParserTestCase(ConfigMixin, unittest.TestCase):
     """
     Tests for `backee/parser/logger_parser.py`.
     """
-
     @unittest.mock.patch('os.mkdir')
     def test_file_logger_all_values_parsed(self, mkdir):
         """
