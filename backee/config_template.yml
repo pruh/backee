@@ -7,10 +7,10 @@ settings:
 loggers:
   - type: file
     file: /some/file
-    format: "('%(asctime)s [%(threadName)18s][%(levelname)8s] %(message)s')" # https://docs.python.org/3/library/logging.html#logrecord-attributes
+    format: "('%(asctime)s [%(threadName)18s][%(levelname)8s] %(message)s')" # see more at https://docs.python.org/3/library/logging.html#logrecord-attributes
     min_level: debug # default debug, allowed: debug, info, warning, error, critical
     max_level: error # default critical
-    max_size: 1048576 # in bytes, default is 1 MB
+    max_size: 1m # optional, default is 1 MB, supports suffixes, b, k, m, g for bytes, kilobytes and so on
     backup_count: 1 # default 0
 
   - type: web # for web loggers {{ name }} and {{ message }} will be replaced in url, headers and body
