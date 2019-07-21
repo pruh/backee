@@ -154,6 +154,23 @@ class LoggersParserTestCase(ConfigMixin, unittest.TestCase):
                                              'Content-Type': 'application/json', 'TestHeader3': f"{name} {message}"},
                                          url=f"https://some/url3?name={name}&message={message}")
 
+    @unittest.mock.patch('os.mkdir')
+    def test_file_sizes_parser(self, mkdir):
+        """
+        Test file sizes parser.
+        """
+        id_file_size = {2: 1, 3: 1 * 1024, 4: 1 *
+                        1024 * 1024, 5: 1 * 1024 * 1024 * 1024}
+
+        # parse config and get first logger
+        parsed_config = self._get_parsed_config('file_loggers_config.yml')
+
+        # make sure file was opened
+        mkdir.assert_called_with('/folder')
+
+        [self.assertEqual(v, parsed_config.loggers[k].maxBytes)
+         for k, v in id_file_size.items()]
+
     def __compare_file_loggers(self, first: handlers.RotatingFileHandler, second: handlers.RotatingFileHandler) -> Tuple[bool, str]:
         """
         Helper function to compare two handlers.RotatingFileHandler instances.

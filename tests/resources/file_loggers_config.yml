@@ -14,3 +14,23 @@ loggers:
     file: /folder/log_file2
     format: "('%(asctime)s %(levelname)s %(message)s')"
 
+  - type: file
+    file: /folder/log_file3
+    format: "('%(asctime)s %(levelname)s %(message)s')"
+    max_size: 1b
+
+  - type: file
+    file: /folder/log_file4
+    format: "('%(asctime)s %(levelname)s %(message)s')"
+    max_size: 1k
+
+  - type: file
+    file: /folder/log_file5
+    format: "('%(asctime)s %(levelname)s %(message)s')"
+    max_size: 1m
+
+  - type: file
+    file: /folder/log_file6
+    format: "('%(asctime)s %(levelname)s %(message)s')"
+    max_size: 1g
+

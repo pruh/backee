@@ -2,7 +2,7 @@ import os
 import logging
 from logging import handlers
 
-from typing import Tuple, Dict, Any
+from typing import Optional, Union, Tuple, Dict, Any
 
 from backee.model.web_handler import WebHandler
 from backee.model.max_level_filter import MaxLevelFilter
@@ -33,7 +33,7 @@ def __parse_file_logger(logger: Dict[str, Any], name: str) -> logging.Handler:
     max_log_level = logging.CRITICAL if max_log_level is None else max_log_level
 
     log_file_path = logger['file']
-    max_size = logger.get('max_size', 1 * 1024 * 1024)
+    max_size = __parse_file_size(logger.get('max_size'))
     backup_count = logger.get('backup_count', 0)
     formatter = logger.get('format',
                            '%(asctime)s [%(threadName)18s][%(module)14s][%(levelname)8s] %(message)s')
@@ -52,6 +52,33 @@ def __parse_file_logger(logger: Dict[str, Any], name: str) -> logging.Handler:
     filelog.addFilter(MaxLevelFilter(max_log_level))
 
     return filelog
+
+
+def __parse_file_size(file_size: Optional[Union[int, str]]) -> int:
+    """
+    Parse file size, that can be just integer for bytes, or have suffixes
+    like b, k, m, g.
+    """
+    if file_size is None:
+        return 1 * 1024 * 1024
+
+    if isinstance(file_size, int):
+        return file_size
+
+    suffixes = {'b': 1, 'k': 2 ** 10, 'm': 2 ** 20, 'g': 2 ** 30}
+
+    # get numbers in from
+    num = ''
+    multiplier = 1
+    for s in file_size:
+        if s.isdigit():
+            num += s
+        elif s in suffixes and len(num) > 0:
+            multiplier = suffixes[s]
+        else:
+            raise ValueError(f"file size {file_size} not supported")
+
+    return int(num) * multiplier
 
 
 def __parse_web_logger(logger: Dict[str, Any], name: str) -> logging.Handler:
