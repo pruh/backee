@@ -6,6 +6,9 @@ from typing import Tuple
 from backee.model.max_level_filter import MaxLevelFilter
 
 
+log = logging.getLogger(__name__)
+
+
 def setup_default_loggers() -> None:
     __setup_global_logging_levels()
 
@@ -39,3 +42,19 @@ def __setup_global_logging_levels():
 
 def setup_config_loggers(loggers: Tuple[logging.Handler]) -> None:
     [logging.getLogger().addHandler(handler) for handler in loggers]
+
+
+def setup_uncaught_exceptions_logger():
+    sys.excepthook = __handle_exception
+
+
+def __handle_exception(exc_type, exc_value, exc_traceback):
+    """
+    Redirect uncaught exceptions to logger.
+    """
+    if issubclass(exc_type, KeyboardInterrupt):
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+        return
+
+    log.error("Uncaught exception", exc_info=(
+        exc_type, exc_value, exc_traceback))

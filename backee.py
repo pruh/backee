@@ -3,13 +3,12 @@
 import logging
 
 from backee.parser.config_parser import parse_config
-from backee.logger.loggers import setup_default_loggers, setup_config_loggers
-
-
-log = logging.getLogger(__name__)
+from backee.logger.loggers import setup_default_loggers, setup_config_loggers, setup_uncaught_exceptions_logger
 
 
 def main():
+    setup_uncaught_exceptions_logger()
+
     setup_default_loggers()
 
     config = parse_config('backee/config.yml')
