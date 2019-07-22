@@ -38,6 +38,7 @@ def __setup_global_logging_levels():
 
     logging.getLogger("requests").setLevel(logging.WARNING)
     logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("paramiko").setLevel(logging.WARNING)
 
 
 def setup_config_loggers(loggers: Tuple[logging.Handler]) -> None:

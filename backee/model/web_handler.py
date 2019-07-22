@@ -44,10 +44,9 @@ class WebHandler(logging.Handler):
 
     def __replace_pattern(self, pattern: str, new_text: str, original: str) -> str:
         """
-        Replace pattern in string with and URL encode.
+        Replace pattern in string with and encode it afterwards.
         """
-        return original.replace(
-            pattern, new_text.replace("\\", "\\\\").replace('"', '\\"'))
+        return original.replace(pattern, new_text)
 
     def __replace_pattern_in_map(self,
                                  pattern: str,

@@ -64,8 +64,7 @@ backup_items:
 
   databases:
     includes:
-      - name: name1
-        type: mysql
+      - type: mysql
         username: username1
         password: password1
         database: database1
@@ -77,8 +76,7 @@ backup_items:
           monthly: 15
           yearly: 3
 
-      - name: name2
-        type: mysql
+      - type: mysql
         username: username2
         password: password2
         database: database2
@@ -87,8 +85,7 @@ backup_items:
           host: 192.168.1.1
           port: 3365
 
-      - name: name3
-        type: mysql
+      - type: mysql
         username: username3
         password: ${MYSQL_PASSWORD}
         database: database3

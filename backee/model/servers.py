@@ -1,4 +1,6 @@
 from dataclasses import dataclass
+from typing import Optional
+
 from backee.model.rotation_strategy import RotationStrategy
 
 
@@ -14,4 +16,4 @@ class SshBackupServer(BackupServer):
     hostname: str
     port: int
     username: str
-    key_path: str
+    key_path: Optional[str]
