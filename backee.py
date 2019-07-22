@@ -4,6 +4,7 @@ import logging
 
 from backee.parser.config_parser import parse_config
 from backee.logger.loggers import setup_default_loggers, setup_config_loggers, setup_uncaught_exceptions_logger
+from backee.backup.backup import backup
 
 
 def main():
@@ -14,6 +15,8 @@ def main():
     config = parse_config('backee/config.yml')
 
     setup_config_loggers(config.loggers)
+
+    backup(config.backup_items, config.backup_servers)
 
 
 if __name__ == '__main__':

@@ -50,7 +50,6 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         All possible values are set and parsed correctly.
         """
         expected_database = self.__create_database_item(
-            name='name1',
             username='username1',
             password='password1',
             database='database1',
@@ -69,7 +68,6 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         All possible values are set and parsed correctly.
         """
         expected_database = self.__create_database_item(
-            name='name2',
             username='username2',
             password='password2',
             database='database2',
@@ -88,7 +86,6 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         All possible values are set and parsed correctly.
         """
         expected_database = self.__create_database_item(
-            name='name3',
             username='username3',
             password='${MYSQL_PASSWORD}',
             database='database3',
@@ -126,14 +123,12 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
             rotation_strategy=rotation_strategy)
 
     def __create_database_item(self,
-                               name: str,
                                username: str,
                                password: str,
                                database: str,
                                connector: DbConnector,
                                rotation_strategy: RotationStrategy = RotationStrategy(daily=1, monthly=0, yearly=0)) -> MysqlBackupItem:
         return MysqlBackupItem(
-            name=name,
             username=username,
             password=password,
             database=database,

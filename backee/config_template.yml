@@ -58,8 +58,7 @@ backup_items:
 
   databases:
     includes:
-      - name: name1
-        type: mysql
+      - type: mysql
         username: username
         password: ${MYSQL_PASSWORD}
         database: database_name
@@ -71,8 +70,7 @@ backup_items:
           monthly: 20 # default 0
           yearly: 4 # default 0
 
-      - name: name2
-        type: mysql
+      - type: mysql
         username: username
         password: ${MYSQL_PASSWORD}
         database: database_name
@@ -81,8 +79,7 @@ backup_items:
           host: 192.168.1.1 # default 127.0.0.1
           port: 3306 # default 3306
 
-      - name: name3
-        type: mysql
+      - type: mysql
         username: username
         password: ${MYSQL_PASSWORD}
         database: database_name

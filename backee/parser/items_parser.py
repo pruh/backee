@@ -36,7 +36,6 @@ def __parse_mysql_item(item: Dict[str, Any], rotation_strategy: RotationStrategy
     rotation_strategy = __parse_rotation_strategy_if_any(
         item, rotation_strategy)
     return MysqlBackupItem(
-        name=item['name'],
         username=item['username'],
         password=item['password'],
         database=item['database'],
