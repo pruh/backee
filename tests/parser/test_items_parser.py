@@ -23,7 +23,7 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         expected_file_item = self.__create_file_item(
             includes=('/path/to/include1', '/path/to/include2',),
             excludes=('/path/to/include/exclude',),
-            rotation_strategy=RotationStrategy(daily=10, monthly=5, yearly=1))
+            rotation_strategy=None)
 
         # parse config and get file items
         parsed_config = self._get_parsed_config('full_config.yml')
@@ -73,7 +73,7 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
             database='database2',
             connector=self.__create_db_remote_connector(
                 hostname='192.168.1.1', port=3365),
-            rotation_strategy=RotationStrategy(daily=10, monthly=5, yearly=1))
+            rotation_strategy=None)
 
         parsed_config = self._get_parsed_config('full_config.yml')
         parsed_database_items = parsed_config.backup_items[2]
@@ -91,7 +91,7 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
             database='database3',
             connector=self.__create_db_docker_connector(
                 container='container3', port=3370),
-            rotation_strategy=RotationStrategy(daily=10, monthly=5, yearly=1))
+            rotation_strategy=None)
 
         parsed_config = self._get_parsed_config('full_config.yml')
         parsed_database_items = parsed_config.backup_items[3]
@@ -116,7 +116,7 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
     def __create_file_item(self,
                            includes: Tuple[str] = ((),),
                            excludes: Tuple[str] = ((),),
-                           rotation_strategy: RotationStrategy = RotationStrategy(daily=1, monthly=0, yearly=0)) -> FilesBackupItem:
+                           rotation_strategy: RotationStrategy = None) -> FilesBackupItem:
         return FilesBackupItem(
             includes=includes,
             excludes=excludes,
@@ -127,7 +127,7 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
                                password: str,
                                database: str,
                                connector: DbConnector,
-                               rotation_strategy: RotationStrategy = RotationStrategy(daily=1, monthly=0, yearly=0)) -> MysqlBackupItem:
+                               rotation_strategy: RotationStrategy = None) -> MysqlBackupItem:
         return MysqlBackupItem(
             username=username,
             password=password,
@@ -138,7 +138,7 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
 
     def __create_docker_backup_item(self,
                                     volumes: Tuple[str],
-                                    rotation_strategy: RotationStrategy = RotationStrategy(daily=1, monthly=0, yearly=0)) -> DockerDataVolumesBackupItem:
+                                    rotation_strategy: RotationStrategy = None) -> DockerDataVolumesBackupItem:
         return DockerDataVolumesBackupItem(volumes=volumes, rotation_strategy=rotation_strategy)
 
     def __create_db_remote_connector(self, hostname: str, port: int) -> RemoteConnector:

@@ -18,7 +18,7 @@ def __parse_ssh_server(server: Dict[str, Any], rotation_strategy: RotationStrate
     )
 
 
-def __parse_server(server: Dict[str, Any], rotation_strategy: RotationStrategy) -> BackupServer:
+def __parse_server(server: Dict[str, Any], default_rs: RotationStrategy) -> BackupServer:
     supported_servers = {
         "ssh": __parse_ssh_server
     }
@@ -27,15 +27,14 @@ def __parse_server(server: Dict[str, Any], rotation_strategy: RotationStrategy) 
     if server_type not in supported_servers:
         raise KeyError(f"Unkown server type: '{server_type}'")
 
-    if 'rotation_strategy' in server:
-        rotation_strategy = parse_rotation_strategy(
-            server['rotation_strategy'])
+    rotation_strategy = parse_rotation_strategy(
+        server['rotation_strategy']) if 'rotation_strategy' in server else default_rs
 
     return supported_servers[server_type](server, rotation_strategy)
 
 
-def parse_servers(servers: Tuple[Dict[str, Any]], rotation_strategy: RotationStrategy) -> Tuple[BackupServer]:
+def parse_servers(servers: Tuple[Dict[str, Any]], default_rs: RotationStrategy) -> Tuple[BackupServer]:
     if servers is None:
         return ((),)
 
-    return tuple(__parse_server(x, rotation_strategy) for x in servers)
+    return tuple(__parse_server(x, default_rs) for x in servers)

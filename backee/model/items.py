@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Tuple, Dict
+from typing import Tuple, Dict, Optional
 from abc import ABC, abstractmethod
 
 from backee.model.db_connectors import DbConnector
@@ -8,7 +8,7 @@ from backee.model.rotation_strategy import RotationStrategy
 
 @dataclass
 class BackupItem(ABC):
-    rotation_strategy: RotationStrategy
+    rotation_strategy: Optional[RotationStrategy]
 
     @property
     @abstractmethod
