@@ -28,13 +28,13 @@ class SshTransmitter(Transmitter):
         self.ssh.set_missing_host_key_policy(AutoAddPolicy())
 
     def is_remote_dir_exist(self, path: str) -> bool:
-        log.debug(f"checking if {path} exists")
+        log.debug(f"check existence of {path}")
         exists = self.__execute_ssh_command(
             f"if [ -d '{path}' ]; then echo true; else echo false; fi;")
         return exists == 'true'
 
     def create_dir(self, path: str) -> None:
-        log.debug(f"creating directory: {path}")
+        log.debug(f"create directory: {path}")
         result = self.__execute_ssh_command(f"mkdir -p '{path}'; echo $?")
         if result != '0':
             raise OSError(f"cannot create directory {path}")
@@ -44,7 +44,7 @@ class SshTransmitter(Transmitter):
             self.remove_remote_dirs((path),)
 
     def remove_remote_dirs(self, dirs_paths: Tuple[str]) -> None:
-        log.debug(f"removing directories {dirs_paths}")
+        log.debug(f"remove directories {dirs_paths}")
         rm_arg = ' '.join(x for x in dirs_paths)
         result = self.__execute_ssh_command(f"rm -r '{rm_arg}'; echo $?")
         if result != '0':
@@ -57,32 +57,36 @@ class SshTransmitter(Transmitter):
             f"find '{backup_dir_path}' -mindepth 1 -maxdepth 1 -type d -name '*{temp_dir_suffix}' | wc -l")
 
         if result != '0':
-            log.error(f"Some temp dirs are in {backup_dir_path}")
+            log.error(f"some temp dirs are in {backup_dir_path}")
 
     def check_links_dir(self,
                         server_root_dir_path: str,
                         item_name: str,
                         links_dir_path: str,
                         temp_dir_suffix: str) -> None:
-        log.debug("checking if directory for links exists")
+        """
+        Check if links directory exists and recreate if not.
+        Last backup will be used to link to.
+        """
+        log.debug("check links directory")
 
         if self.is_remote_dir_exist(links_dir_path):
             log.debug("links directory exists")
             return
 
-        log.debug("links directory not found, trying to create a new one")
+        log.debug("links directory not found, create a new one")
 
         last_backup_dir = self.__get_last_backup_dir(
             server_root_dir_path, temp_dir_suffix)
         if not last_backup_dir:
-            log.debug("backup dir for relinking is not found")
+            log.debug("backup dir for re-linking is not found")
             return
 
         log.debug(f'found last backup dir: {last_backup_dir}')
         if self.recreate_links_dir(last_backup_dir, links_dir_path):
-            log.debug("links dir recreated")
+            log.debug("links dir re-created")
         else:
-            log.debug("cannot recreate links dir")
+            log.debug("cannot re-create links dir")
 
     def __get_last_backup_dir(self,
                               server_root_dir_path: str,
@@ -97,7 +101,7 @@ class SshTransmitter(Transmitter):
         return last_backup_dir
 
     def recreate_links_dir(self, last_backup_dir: str, links_dir_path: str) -> None:
-        log.debug(f"re-linking '{last_backup_dir}' to '{links_dir_path}'")
+        log.debug(f"re-link '{last_backup_dir}' to '{links_dir_path}'")
         result = self.__execute_ssh_command(
             f"rm -f '{links_dir_path}' && ln -s '{last_backup_dir}' '{links_dir_path}'; echo $?")
         if result != '0':
@@ -105,7 +109,7 @@ class SshTransmitter(Transmitter):
                 f"Cannot re-link directory {last_backup_dir} to {links_dir_path}")
 
     def rename_dir(self, prev_name: str, new_name: str) -> None:
-        log.debug(f"renaming dir from {prev_name} to {new_name}")
+        log.debug(f"rename {prev_name} to {new_name}")
         result = self.__execute_ssh_command(
             f"mv '{prev_name}' '{new_name}'; echo $?")
         if result != '0':
@@ -120,7 +124,7 @@ class SshTransmitter(Transmitter):
             log.debug("links dir found")
             link_options = f"--link-dest={links_dir_path}"
         else:
-            log.debug("links dir is not found")
+            log.debug("links dir not found")
             link_options = ''
 
         if self.__server.key_path:
