@@ -22,7 +22,7 @@ def backup(items: Tuple[BackupItem], servers: Tuple[BackupServer]) -> None:
 
 
 def __backup_to_server(items: Tuple[BackupItem], server: BackupServer) -> None:
-    log.debug(f"starting backup to {server.name}")
+    log.debug(f"backup to {server.name}")
 
     transmitter = __create_transmitter(server)
 
@@ -31,6 +31,8 @@ def __backup_to_server(items: Tuple[BackupItem], server: BackupServer) -> None:
             __backup_files_to_server(transmitter, server, item)
         else:
             log.info(f"unsupported backup item: {item.name}")
+
+    log.info(f"backup to {server.name} finished")
 
 
 def __create_transmitter(server: BackupServer) -> Transmitter:
@@ -43,7 +45,7 @@ def __create_transmitter(server: BackupServer) -> Transmitter:
 def __backup_files_to_server(transmitter: SshTransmitter,
                              server: SshBackupServer,
                              item: FilesBackupItem) -> None:
-    log.debug(f'backing up {item.name} to {server.name}')
+    log.debug(f'backup {item.name}')
 
     server_root_dir_path = os.path.join(server.location, item.name, '')
     date_time_prefix = 'backup_'
@@ -85,8 +87,7 @@ def __backup_files_to_server(transmitter: SshTransmitter,
         date_time_format,
         date_time_prefix)
 
-    log.debug(
-        f"finished backing up of {item.name} to {server.name}")
+    log.debug(f"{item.name} backup finished")
 
 
 def _remove_old_backups(transmitter: SshTransmitter,
@@ -94,7 +95,7 @@ def _remove_old_backups(transmitter: SshTransmitter,
                         rotation_strategy: RotationStrategy,
                         date_time_format: str,
                         date_time_prefix: str) -> None:
-    log.debug('looking for old backups')
+    log.debug('looking for outdated backups')
 
     backups = transmitter.get_backup_names_sorted(server_root_dir_path)
 
@@ -127,7 +128,7 @@ def _remove_old_backups(transmitter: SshTransmitter,
 
     to_delete = tuple([x for x in backups if x not in exclude])
     if len(to_delete) == 0:
-        log.debug("no outdated backups - no need to delete")
+        log.debug("no outdated backups")
         return
 
     log.debug(f"removing outdated backup(s) {to_delete}")
