@@ -46,11 +46,11 @@ def __parse_database_backup_item(item: Dict[str, str]) -> DatabaseBackupItem:
     return supported_types[db_type](item)
 
 
-def __parse_databases(item: Optional[Dict[str, Any]]) -> Tuple[DatabaseBackupItem]:
-    if item is None:
+def __parse_databases(items: Optional[Dict[str, Any]]) -> Tuple[DatabaseBackupItem]:
+    if items is None:
         return ((),)
 
-    return tuple(__parse_database_backup_item(item=x) for x in item.get('includes'))
+    return tuple(__parse_database_backup_item(item=x) for x in items)
 
 
 def __parse_docker_volumes(item: Optional[Dict[str, List[str]]]) -> DockerDataVolumesBackupItem:

@@ -57,36 +57,35 @@ backup_items:
       - /path/to/include/exclude
 
   databases:
-    includes:
-      - type: mysql
-        username: username
-        password: ${MYSQL_PASSWORD}
-        database: database_name
-        connection:
-          type: local
-          port: 3306 # default 3306
-        rotation_strategy: # optional, overwrites any other rotation strategy
-          daily: 40
-          monthly: 20
-          yearly: 4
+    - type: mysql
+      username: username
+      password: ${MYSQL_PASSWORD}
+      database: database_name
+      connection:
+        type: local
+        port: 3306 # default 3306
+      rotation_strategy: # optional, overwrites any other rotation strategy
+        daily: 40
+        monthly: 20
+        yearly: 4
 
-      - type: mysql
-        username: username
-        password: ${MYSQL_PASSWORD}
-        database: database_name
-        connection:
-          type: remote
-          host: 192.168.1.1 # default 127.0.0.1
-          port: 3306 # default 3306
+    - type: mysql
+      username: username
+      password: ${MYSQL_PASSWORD}
+      database: database_name
+      connection:
+        type: remote
+        host: 192.168.1.1 # default 127.0.0.1
+        port: 3306 # default 3306
 
-      - type: mysql
-        username: username
-        password: ${MYSQL_PASSWORD}
-        database: database_name
-        connection:
-          type: docker
-          container: container_name
-          port: 3370
+    - type: mysql
+      username: username
+      password: ${MYSQL_PASSWORD}
+      database: database_name
+      connection:
+        type: docker
+        container: container_name
+        port: 3370
 
   docker:
     data_volumes: # output of docker volume ls -q
