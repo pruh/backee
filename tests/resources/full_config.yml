@@ -63,36 +63,35 @@ backup_items:
       - /path/to/include/exclude
 
   databases:
-    includes:
-      - type: mysql
-        username: username1
-        password: password1
-        database: database1
-        connection:
-          type: local
-          port: 3360
-        rotation_strategy:
-          daily: 30
-          monthly: 15
-          yearly: 3
+    - type: mysql
+      username: username1
+      password: password1
+      database: database1
+      connection:
+        type: local
+        port: 3360
+      rotation_strategy:
+        daily: 30
+        monthly: 15
+        yearly: 3
 
-      - type: mysql
-        username: username2
-        password: password2
-        database: database2
-        connection:
-          type: remote
-          host: 192.168.1.1
-          port: 3365
+    - type: mysql
+      username: username2
+      password: password2
+      database: database2
+      connection:
+        type: remote
+        host: 192.168.1.1
+        port: 3365
 
-      - type: mysql
-        username: username3
-        password: ${MYSQL_PASSWORD}
-        database: database3
-        connection:
-          type: docker
-          container: container3
-          port: 3370
+    - type: mysql
+      username: username3
+      password: ${MYSQL_PASSWORD}
+      database: database3
+      connection:
+        type: docker
+        container: container3
+        port: 3370
 
   docker:
     data_volumes:
