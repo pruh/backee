@@ -103,7 +103,8 @@ class WebHandler(logging.Handler):
                 headers=headers,
                 auth=auth)
 
-        return f"web logger response {result}"
+        return f"web logger response {result.status_code}: " \
+            f"{result.content.decode('UTF-8') if result.content else ''}"
 
     def __create_logger(self) -> logging.Logger:
         """
