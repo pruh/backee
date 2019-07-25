@@ -36,9 +36,9 @@ servers:
       username: username # defaults to empty
       key: /path/to/id_rsa # system default location is used by default
     rotation_strategy: # optional, server rotation strategy, overwrites global, but can be overwritten by item rotation strategy
-      daily: 40 # default 1
-      monthly: 20 # default 0
-      yearly: 4 # default 0
+      daily: 40
+      monthly: 20
+      yearly: 4
 
   - name: server2
     type: ssh
@@ -66,9 +66,9 @@ backup_items:
           type: local
           port: 3306 # default 3306
         rotation_strategy: # optional, overwrites any other rotation strategy
-          daily: 40 # default 1
-          monthly: 20 # default 0
-          yearly: 4 # default 0
+          daily: 40
+          monthly: 20
+          yearly: 4
 
       - type: mysql
         username: username
@@ -93,11 +93,12 @@ backup_items:
       - data_container_1
       - data_container_2
     rotation_strategy: # optional, overwrites any other rotation strategy
-      daily: 40 # default 1
-      monthly: 20 # default 0
-      yearly: 4 # default 0
+      daily: 40
+      monthly: 20
+      yearly: 4
 
-rotation_strategy: # optional, global rotation strategy applied to everything, but can be overwritten by server or item rotation strategy
-  daily: 30 # default 1
-  monthly: 6 # default 0
-  yearly: 1 # default 0
+# required, global rotation strategy applied to everything, but can be overwritten by server or item rotation strategy
+rotation_strategy:
+  daily: 30
+  monthly: 6
+  yearly: 1

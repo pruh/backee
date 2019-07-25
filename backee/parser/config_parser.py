@@ -36,6 +36,5 @@ def parse_contents(contents: str) -> Config:
         name=name,
         loggers=parse_loggers(loggers=yml_config.get('loggers'), name=name),
         backup_servers=parse_servers(servers=yml_config.get('servers'),
-                                     rotation_strategy=rotation_strategy),
-        backup_items=parse_items(items=yml_config.get('backup_items'),
-                                 rotation_strategy=rotation_strategy))
+                                     default_rs=rotation_strategy),
+        backup_items=parse_items(items=yml_config.get('backup_items')))

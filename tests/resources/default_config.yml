@@ -16,3 +16,8 @@ servers:
 
 backup_items:
   files:
+
+rotation_strategy:
+  daily: 1
+  monthly: 0
+  yearly: 0
