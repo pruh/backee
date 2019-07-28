@@ -2,6 +2,8 @@ import os
 from datetime import datetime
 import logging
 import subprocess
+import re
+
 from typing import Optional, Tuple
 
 from paramiko import SSHClient, AutoAddPolicy
@@ -91,7 +93,7 @@ class SshTransmitter(Transmitter):
     def __get_last_backup_dir(self,
                               server_root_dir_path: str,
                               temp_dir_suffix: str) -> Optional[str]:
-        log.debug(f'looking for last backup dir in {server_root_dir_path}')
+        log.debug(f"looking for last backup dir in {server_root_dir_path}")
 
         command = f"find '{server_root_dir_path}' -mindepth 1 -maxdepth 1 " \
             "-type d ! -name '*{temp_dir_suffix}' " \
@@ -127,17 +129,14 @@ class SshTransmitter(Transmitter):
             log.debug("links dir not found")
             link_options = ''
 
-        if self.__server.key_path:
-            ssh_options = f"--rsh=\"ssh -i '{self.__server.key_path}' -p {self.__server.port}\" "
-        else:
-            ssh_options = f"--rsh=\"ssh -p {self.__server.port}\" "
-        rsynccmd = f"rsync --archive --progress --compress {ssh_options} "
-        rsynccmd += f"--verbose --human-readable --relative {link_options} "
-        rsynccmd += f"{' '.join(f'--exclude {s}' for s in item.excludes)} "
-        rsynccmd += f"{' '.join(item.includes)} "
-        rsynccmd += f"{self.__server.username}@{self.__server.hostname}:{remote_path}"
+        ssh_optons = self.__get_rsync_ssh_options()
+        rsync_cmd = f"rsync --archive --progress --compress {ssh_optons} "
+        rsync_cmd += f"--verbose --human-readable --relative {link_options} "
+        rsync_cmd += f"{' '.join(f'--exclude {s}' for s in item.excludes)} "
+        rsync_cmd += f"{' '.join(item.includes)} "
+        rsync_cmd += f"{self.__server.username}@{self.__server.hostname}:{remote_path}"
 
-        with subprocess.Popen(rsynccmd,
+        with subprocess.Popen(rsync_cmd,
                               shell=True,
                               stdout=subprocess.PIPE,
                               stderr=subprocess.PIPE,
@@ -148,15 +147,61 @@ class SshTransmitter(Transmitter):
 
             exit_code = rsync_proc.wait()
             if exit_code != 0:
-                stderr = ", ".join(
+                stderr = "\n".join(
                     map(lambda s: s.rstrip(), rsync_proc.stderr.readlines()))
                 log.error(f"rsync finished with non-zero exit code {exit_code} "
                           f"and stderr: {stderr}")
                 raise OSError(f'Cannot transfer to {remote_path}')
 
+    def __get_rsync_ssh_options(self) -> str:
+        if self.__server.key_path:
+            return f"--rsh=\"ssh -i '{self.__server.key_path}' -p {self.__server.port}\" "
+        else:
+            return f"--rsh=\"ssh -p {self.__server.port}\" "
+
     def get_backup_names_sorted(self, server_root_dir_path: str) -> Tuple[str]:
         find_dirs = f"find {server_root_dir_path} -mindepth 1 -maxdepth 1 -type d | sort -t- -k1"
         return tuple(self.__execute_ssh_command(find_dirs).split(", "))
+
+    def verify_backup(
+            self,
+            item: FilesBackupItem,
+            remote_path: str) -> bool:
+        log.debug(f"verifing backup")
+
+        ssh_optons = self.__get_rsync_ssh_options()
+        rsync_cmd = "rsync --archive --verbose --hard-links --progress " \
+            f"--itemize-changes --dry-run --relative {ssh_optons} " \
+            f"{' '.join(f'--exclude {s}' for s in item.excludes)} " \
+            f"{' '.join(item.includes)} " \
+            f"{self.__server.username}@{self.__server.hostname}:{remote_path}"
+        no_errors = True
+        with subprocess.Popen(rsync_cmd,
+                              shell=True,
+                              stdout=subprocess.PIPE,
+                              stderr=subprocess.PIPE,
+                              bufsize=1,
+                              universal_newlines=True) as rsync_proc:
+            error_pattern = "^[<>]"
+            warn_pattern = "^\."
+            for line in rsync_proc.stdout:
+                fmt_line = line.rstrip()
+                log.debug(fmt_line)
+                if re.findall(warn_pattern, fmt_line) or \
+                        re.findall(error_pattern, fmt_line):
+                    no_errors = False
+                    log.debug(f"{fmt_line} is different")
+                    break
+
+            exit_code = rsync_proc.wait()
+            if exit_code != 0:
+                stderr = "\n".join(
+                    map(lambda s: s.rstrip(), rsync_proc.stderr.readlines()))
+                log.error(f"rsync finished with non-zero exit code {exit_code} "
+                          f"and stderr: {stderr}")
+                raise OSError(f'Cannot transfer to {remote_path}')
+
+        return no_errors
 
     def __execute_ssh_command(self, command: str):
         """
@@ -175,11 +220,11 @@ class SshTransmitter(Transmitter):
 
         _, stdout, stderr = self.ssh.exec_command(command)
 
-        stderr = ', '.join(map(lambda s: s.rstrip(), stderr.readlines()))
+        stderr = '\n'.join(map(lambda s: s.rstrip(), stderr.readlines()))
         if stderr:
             raise OSError(f"stderr is not empty: '{stderr}'")
 
-        return ', '.join(map(lambda s: s.rstrip(), stdout.readlines()))
+        return '\n'.join(map(lambda s: s.rstrip(), stdout.readlines()))
 
     def __is_connected(self) -> bool:
         return self.ssh.get_transport() is not None and self.ssh.get_transport().is_active()

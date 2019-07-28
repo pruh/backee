@@ -87,7 +87,10 @@ def __backup_files_to_server(transmitter: SshTransmitter,
         date_time_format,
         date_time_prefix)
 
-    log.debug(f"{item.name} backup finished")
+    if transmitter.verify_backup(item, links_dir_path):
+        log.debug(f"{item.name} backup finished")
+    else:
+        log.warning(f"{item.name} backup items differ from original items")
 
 
 def _remove_old_backups(transmitter: SshTransmitter,

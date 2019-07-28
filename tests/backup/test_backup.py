@@ -167,8 +167,7 @@ class BackupTestCase(unittest.TestCase):
             transmitter.remove_remote_dirs.call_args_list[0][0][0],
             msg='wrong yearly backups to delete')
 
-    @unittest.mock.patch('backee.backup.transmitter.SshTransmitter')
-    def test_proper_rotation_strategy(self, transmitter):
+    def test_proper_rotation_strategy(self):
         """
         Test that item rotation strategy is used if any, server otherwise.
         """
