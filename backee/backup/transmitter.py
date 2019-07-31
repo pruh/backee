@@ -25,6 +25,9 @@ class SshTransmitter(Transmitter):
     def __init__(self, server: SshBackupServer):
         self.__server = server
 
+        deps = ('rsync',)
+        self.__check_deps(deps)
+
         self.ssh = SSHClient()
         self.ssh.load_system_host_keys()
         self.ssh.set_missing_host_key_policy(AutoAddPolicy())
@@ -236,3 +239,20 @@ class SshTransmitter(Transmitter):
                              username=self.__server.username,
                              key_filename=self.__server.key_path,
                              look_for_keys=self.__server.key_path == None)
+
+    def __check_deps(self, deps: Tuple[str]) -> None:
+        """
+        Check that deps, passed as arguments are available and raise an excpetion if not.
+        """
+        for dep in deps:
+            cmd = f"hash {dep}"
+            with subprocess.Popen(cmd,
+                                  shell=True,
+                                  stdout=subprocess.PIPE,
+                                  stderr=subprocess.PIPE,
+                                  bufsize=1,
+                                  universal_newlines=True) as proc:
+                exit_code = proc.wait()
+                if exit_code != 0:
+                    raise OSError(
+                        f"{dep} is not installed, but required")
