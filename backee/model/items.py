@@ -44,7 +44,7 @@ class MysqlBackupItem(DatabaseBackupItem):
 
 @dataclass
 class DockerDataVolumesBackupItem(BackupItem):
-    volumes: Tuple[str]
+    volume: str
 
     @property
     def name(self):
