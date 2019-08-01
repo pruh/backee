@@ -119,6 +119,12 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         self.assertEqual(expected_docker_item_2, parsed_config.backup_items[5],
                          msg='full docker item is parsed incorrectly')
 
+    def test_excludes_file_item_optional(self):
+        parsed_config = self._get_parsed_config('default_config.yml')
+        item = parsed_config.backup_items[0]
+
+        self.assertEqual((), item.excludes, msg='excludes parsed incirrectly')
+
     def __create_file_item(self,
                            includes: Tuple[str] = ((),),
                            excludes: Tuple[str] = ((),),
