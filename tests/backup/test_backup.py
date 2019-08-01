@@ -3,8 +3,9 @@ from unittest import mock
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 
-from backee.backup.backup import _remove_old_backups, _get_rotation_strategy
+from backee.backup.backup import _remove_old_backups, _get_rotation_strategy, _check_item
 from backee.model.rotation_strategy import RotationStrategy
+from backee.model.items import FilesBackupItem
 
 
 class BackupTestCase(unittest.TestCase):
@@ -183,6 +184,35 @@ class BackupTestCase(unittest.TestCase):
             server_strategy=server_strategy,
             item_strategy=item_strategy),
             msg='wrong rotation strategy is used')
+
+    @unittest.mock.patch('os.path.exists')
+    def test_error_when_file_does_not_exist(self, exists):
+        """
+        Test that exception is raised when backup file item on the disk does not exist.
+        """
+        exists1 = '/a/b/c'
+        exists2 = '/d/e/f'
+        nonexistent = '/g/f/h'
+
+        def side_effect(filename):
+            if filename == exists1 or filename == exists2:
+                return True
+            else:
+                return False
+
+        exists.side_effect = side_effect
+
+        # error is not raised when all files exists
+        self.assertIsNone(_check_item(FilesBackupItem(
+            includes=(exists1, exists2),
+            excludes=(),
+            rotation_strategy=None)))
+
+        # error is raised when any of the files missing
+        self.assertRaises(OSError, _check_item, FilesBackupItem(
+            includes=(exists1, exists2),
+            excludes=(nonexistent,),
+            rotation_strategy=None))
 
 
 if __name__ == '__main__':

@@ -17,6 +17,9 @@ def backup(items: Tuple[BackupItem], servers: Tuple[BackupServer]) -> None:
     """
     Start backup process.
     """
+    for item in items:
+        _check_item(item)
+
     for server in servers:
         __backup_to_server(items, server)
 
@@ -177,3 +180,12 @@ def __is_same_backup(already_added: List[str],
 def _get_rotation_strategy(server_strategy: RotationStrategy,
                            item_strategy: Optional[RotationStrategy]):
     return item_strategy if item_strategy else server_strategy
+
+
+def _check_item(item: BackupItem):
+    if isinstance(item, FilesBackupItem):
+        for path in [*item.includes, *item.excludes]:
+            if not os.path.exists(path):
+                raise OSError(f"file does not exist: {path}")
+        else:
+            log.info(f"unsupported backup item to check: {item.name}")
