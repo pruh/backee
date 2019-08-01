@@ -43,12 +43,15 @@ def __parse_databases(items: Dict[str, Any]) -> Tuple[DatabaseBackupItem]:
     return tuple(__parse_database_backup_item(item=x) for x in items)
 
 
-def __parse_docker_volumes(item: Dict[str, List[str]]) -> DockerDataVolumesBackupItem:
-    return DockerDataVolumesBackupItem(
-        volumes=tuple(item.get('data_volumes')),
-        rotation_strategy=parse_rotation_strategy(
-            item['rotation_strategy']) if 'rotation_strategy' in item else None
-    )
+def __parse_docker_volumes(item: Dict[str, List[str]]) -> Tuple[DockerDataVolumesBackupItem]:
+    result = []
+    for volume in item.get('data_volumes'):
+        result.append(DockerDataVolumesBackupItem(
+            volume=volume,
+            rotation_strategy=parse_rotation_strategy(
+                item['rotation_strategy']) if 'rotation_strategy' in item else None
+        ))
+    return tuple(result)
 
 
 def parse_items(items: Optional[Dict[str, Any]]) -> Optional[Tuple[BackupItem]]:
@@ -61,6 +64,6 @@ def parse_items(items: Optional[Dict[str, Any]]) -> Optional[Tuple[BackupItem]]:
     if 'databases' in items:
         result += __parse_databases(items.get('databases'))
     if 'docker' in items:
-        result += (__parse_docker_volumes(items.get('docker')),)
+        result += __parse_docker_volumes(items.get('docker'))
 
     return result if len(result) else None

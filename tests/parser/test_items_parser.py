@@ -105,14 +105,18 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         """
         All possible values are set and parsed correctly.
         """
-        expected_docker_items = self.__create_docker_backup_item(
-            volumes=('data_container_1', 'data_container_2',),
+        expected_docker_item_1 = self.__create_docker_backup_item(
+            volume='data_container_1',
+            rotation_strategy=RotationStrategy(daily=40, monthly=20, yearly=4))
+        expected_docker_item_2 = self.__create_docker_backup_item(
+            volume='data_container_2',
             rotation_strategy=RotationStrategy(daily=40, monthly=20, yearly=4))
 
         parsed_config = self._get_parsed_config('full_config.yml')
-        parsed_docker_items = parsed_config.backup_items[4]
 
-        self.assertEqual(expected_docker_items, parsed_docker_items,
+        self.assertEqual(expected_docker_item_1, parsed_config.backup_items[4],
+                         msg='full docker item is parsed incorrectly')
+        self.assertEqual(expected_docker_item_2, parsed_config.backup_items[5],
                          msg='full docker item is parsed incorrectly')
 
     def __create_file_item(self,
@@ -139,9 +143,9 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         )
 
     def __create_docker_backup_item(self,
-                                    volumes: Tuple[str],
+                                    volume: str,
                                     rotation_strategy: RotationStrategy = None) -> DockerDataVolumesBackupItem:
-        return DockerDataVolumesBackupItem(volumes=volumes, rotation_strategy=rotation_strategy)
+        return DockerDataVolumesBackupItem(volume=volume, rotation_strategy=rotation_strategy)
 
     def __create_db_remote_connector(self, hostname: str, port: int) -> RemoteConnector:
         return RemoteConnector(hostname=hostname, port=port)
