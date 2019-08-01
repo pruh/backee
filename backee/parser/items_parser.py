@@ -7,14 +7,7 @@ from backee.model.rotation_strategy import RotationStrategy
 from backee.parser.rotation_strategy_parser import parse_rotation_strategy
 
 
-def __parse_files(item: Optional[Dict[str, Any]]) -> FilesBackupItem:
-    if item is None:
-        return FilesBackupItem(
-            includes=((),),
-            excludes=((),),
-            rotation_strategy=None
-        )
-
+def __parse_files(item: Dict[str, Any]) -> FilesBackupItem:
     return FilesBackupItem(
         includes=tuple(item.get('includes')),
         excludes=tuple(item.get('excludes')),
@@ -46,20 +39,11 @@ def __parse_database_backup_item(item: Dict[str, str]) -> DatabaseBackupItem:
     return supported_types[db_type](item)
 
 
-def __parse_databases(items: Optional[Dict[str, Any]]) -> Tuple[DatabaseBackupItem]:
-    if items is None:
-        return ((),)
-
+def __parse_databases(items: Dict[str, Any]) -> Tuple[DatabaseBackupItem]:
     return tuple(__parse_database_backup_item(item=x) for x in items)
 
 
-def __parse_docker_volumes(item: Optional[Dict[str, List[str]]]) -> DockerDataVolumesBackupItem:
-    if item is None:
-        return DockerDataVolumesBackupItem(
-            volumes=((),),
-            rotation_strategy=None
-        )
-
+def __parse_docker_volumes(item: Dict[str, List[str]]) -> DockerDataVolumesBackupItem:
     return DockerDataVolumesBackupItem(
         volumes=tuple(item.get('data_volumes')),
         rotation_strategy=parse_rotation_strategy(
@@ -67,10 +51,16 @@ def __parse_docker_volumes(item: Optional[Dict[str, List[str]]]) -> DockerDataVo
     )
 
 
-def parse_items(items: Optional[Tuple[Dict[str, Any]]]) -> Tuple[BackupItem]:
+def parse_items(items: Optional[Dict[str, Any]]) -> Optional[Tuple[BackupItem]]:
     if items is None:
-        return ((),)
+        return None
 
-    return tuple((__parse_files(items.get('files')),)
-                 + __parse_databases(items.get('databases'))
-                 + (__parse_docker_volumes(items.get('docker')),))
+    result = ()
+    if 'files' in items:
+        result += (__parse_files(items.get('files')),)
+    if 'databases' in items:
+        result += __parse_databases(items.get('databases'))
+    if 'docker' in items:
+        result += (__parse_docker_volumes(items.get('docker')),)
+
+    return result if len(result) else None

@@ -14,9 +14,6 @@ servers:
     connection:
       host: hostname2
 
-backup_items:
-  files:
-
 rotation_strategy:
   daily: 1
   monthly: 0
