@@ -7,6 +7,7 @@ from backee.model.items import BackupItem, FilesBackupItem, MysqlBackupItem, Dat
 from backee.model.db_connectors import DbConnector, RemoteConnector, DockerConnector
 from backee.model.rotation_strategy import RotationStrategy
 from backee.parser.config_parser import parse_config
+from backee.parser.items_parser import parse_items
 
 from tests.util.config_mixin import ConfigMixin
 
@@ -32,18 +33,19 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         self.assertEqual(expected_file_item, parsed_file_item,
                          msg='full file item is parsed incorrectly')
 
-    def test_file_items_default_values_parsed(self):
+    def test_no_backup_items_parsed(self):
         """
         Only default values are set and parsed correctly.
         """
-        expected_file_item = self.__create_file_item()
+        self.assertIsNone(parse_items(
+            None), msg='backup items should be empty')
 
-        # parse config and get file items
-        parsed_config = self._get_parsed_config('default_config.yml')
-        parsed_file_item = parsed_config.backup_items[0]
-
-        self.assertEqual(expected_file_item, parsed_file_item,
-                         msg='default file item is parsed incorrectly')
+    def test_empty_backup_items_parsed(self):
+        """
+        Only default values are set and parsed correctly.
+        """
+        self.assertIsNone(parse_items({}),
+                          msg='backup items should be None')
 
     def test_local_database_values_parsed(self):
         """

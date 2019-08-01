@@ -49,14 +49,14 @@ servers:
       username: root
       key: /path/to/is_rsa
 
-backup_items:
-  files:
+backup_items: # optional
+  files: # optional
     includes: # optional
       - /path/to/include
     excludes: # optional
       - /path/to/include/exclude
 
-  databases:
+  databases: # optional
     - type: mysql
       username: username
       password: ${MYSQL_PASSWORD}
@@ -87,7 +87,7 @@ backup_items:
         container: container_name
         port: 3370
 
-  docker:
+  docker: # optional
     data_volumes: # output of docker volume ls -q
       - data_container_1
       - data_container_2
