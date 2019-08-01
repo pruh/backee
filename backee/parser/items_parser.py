@@ -9,8 +9,8 @@ from backee.parser.rotation_strategy_parser import parse_rotation_strategy
 
 def __parse_files(item: Dict[str, Any]) -> FilesBackupItem:
     return FilesBackupItem(
-        includes=tuple(item.get('includes')),
-        excludes=tuple(item.get('excludes')),
+        includes=tuple(item.get('includes')) if 'includes' in item else (),
+        excludes=tuple(item.get('excludes')) if 'excludes' in item else (),
         rotation_strategy=parse_rotation_strategy(
             item['rotation_strategy']) if 'rotation_strategy' in item else None
     )

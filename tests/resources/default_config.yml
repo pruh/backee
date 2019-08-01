@@ -14,6 +14,11 @@ servers:
     connection:
       host: hostname2
 
+backup_items:
+  files:
+    includes:
+      - /path/to/include1
+
 rotation_strategy:
   daily: 1
   monthly: 0
