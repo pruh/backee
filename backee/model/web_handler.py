@@ -80,7 +80,7 @@ class WebHandler(logging.Handler):
 
     def __format(self, record):
         if record.exc_info:
-            return f'{record.msg}: {record.exc_info}'
+            return f"{record.msg}: {record.exc_info}"
         else:
             return record.msg
 
