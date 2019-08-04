@@ -1,4 +1,5 @@
 import os
+import json
 import unittest
 from unittest import mock
 from unittest.mock import ANY
@@ -122,8 +123,10 @@ class LoggersParserTestCase(ConfigMixin, unittest.TestCase):
             exc_info=None))
 
         # headers, data and URL are updated
+        data = json.dumps(json.loads(
+            f"{{\"message\":\"{message}\",\"name\":\"{name}\"}}"))
         mock_post.assert_called_once_with(auth=ANY,
-                                          data=f"{{\"message\":\"{message}\",\"name\":\"{name}\"}}",
+                                          data=data,
                                           headers={
                                               'Content-Type': 'application/json', 'TestHeader2': f"{name} {message}"},
                                           url=f"https://some/url2?name={name}&message={message}")
