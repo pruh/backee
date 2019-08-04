@@ -12,13 +12,14 @@ from typing import Dict, Tuple, Optional, Any
 
 class WebHandler(logging.Handler):
 
-    def __init__(self,
-                 method: str,
-                 url: str,
-                 headers: Dict[str, str],
-                 body: str,
-                 auth: Optional[Dict[str, str]],
-                 name: str):
+    def __init__(
+            self,
+            method: str,
+            url: str,
+            headers: Dict[str, str],
+            body: str,
+            auth: Optional[Dict[str, str]],
+            name: str):
 
         name_pattern = '{{ name }}'
 
@@ -48,16 +49,21 @@ class WebHandler(logging.Handler):
         # relies on __hash__ method, which requires all attributes to be set first
         super().__init__()
 
-    def __replace_pattern(self, pattern: str, new_text: str, original: str) -> str:
+    def __replace_pattern(
+            self,
+            pattern: str,
+            new_text: str,
+            original: str) -> str:
         """
         Replace pattern in string with and URL encode.
         """
         return original.replace(pattern, new_text)
 
-    def __replace_pattern_in_map(self,
-                                 pattern: str,
-                                 new_text: str,
-                                 original_dict: Dict[str, str]):
+    def __replace_pattern_in_map(
+            self,
+            pattern: str,
+            new_text: str,
+            original_dict: Dict[str, str]):
         new_dict = {}
         for k, v in original_dict.items():
             if isinstance(k, str):
@@ -95,17 +101,15 @@ class WebHandler(logging.Handler):
             self.__create_logger().exception('error while sending web log message')
 
     def __format(self, record):
-        if record.exc_info:
-            return f"{record.msg}: {record.exc_info}"
-        else:
-            return record.msg
+        return record.msg
 
-    def __make_call(self,
-                    method: str,
-                    url: str,
-                    headers: Optional[Dict[str, str]],
-                    data: str,
-                    auth: Optional[Dict[str, str]]):
+    def __make_call(
+            self,
+            method: str,
+            url: str,
+            headers: Optional[Dict[str, str]],
+            data: str,
+            auth: Optional[Dict[str, str]]):
         result = None
         if method == 'POST':
             result = requests.post(
