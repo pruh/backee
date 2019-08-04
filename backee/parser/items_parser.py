@@ -1,3 +1,4 @@
+import os
 from typing import Dict, Tuple, List, Optional, Any
 
 from backee.parser.db_connector_parser import parse_db_connector
@@ -8,9 +9,17 @@ from backee.parser.rotation_strategy_parser import parse_rotation_strategy
 
 
 def __parse_files(item: Dict[str, Any]) -> FilesBackupItem:
+    if 'includes' in item:
+        includes = tuple([os.path.expanduser(x) for x in item.get('includes')])
+    else:
+        includes = ()
+    if 'excludes' in item:
+        excludes = tuple([os.path.expanduser(x) for x in item.get('excludes')])
+    else:
+        excludes = ()
     return FilesBackupItem(
-        includes=tuple(item.get('includes')) if 'includes' in item else (),
-        excludes=tuple(item.get('excludes')) if 'excludes' in item else (),
+        includes=includes,
+        excludes=excludes,
         rotation_strategy=parse_rotation_strategy(
             item['rotation_strategy']) if 'rotation_strategy' in item else None
     )

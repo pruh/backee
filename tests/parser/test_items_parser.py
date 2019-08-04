@@ -125,6 +125,24 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
 
         self.assertEqual((), item.excludes, msg='excludes parsed incirrectly')
 
+    @unittest.mock.patch('os.path.expanduser')
+    def test_paths_expanded(self, expanduser):
+        """
+        Test that ~ in path to local file items is expanded
+        """
+        def side_effect(path: str):
+            if '~' in path:
+                return path.replace('~', '/a')
+            else:
+                return path
+
+        expanduser.side_effect = side_effect
+        item = {'files': {'includes': [
+            '~/b/c', '/d/e/f'], 'excludes': ['~/y/z']}}
+        parsed = parse_items(item)
+        self.assertCountEqual(parsed[0].includes, ['/a/b/c', '/d/e/f'])
+        self.assertCountEqual(parsed[0].excludes, ['/a/y/z'])
+
     def __create_file_item(self,
                            includes: Tuple[str] = ((),),
                            excludes: Tuple[str] = ((),),
