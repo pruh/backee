@@ -1,3 +1,4 @@
+import json
 import logging
 from logging import LogRecord
 
@@ -29,6 +30,11 @@ class WebHandler(logging.Handler):
         self._body = self.__replace_pattern(
             pattern=name_pattern, new_text=name, original=body) if body else None
 
+        try:
+            self._json = json.loads(self._body)
+        except Exception:
+            self._json = None
+
         if auth is not None and auth['type'] == 'basic':
             self._auth = HTTPBasicAuth(
                 username=auth['username'], password=auth['password'])
@@ -46,8 +52,7 @@ class WebHandler(logging.Handler):
         """
         Replace pattern in string with and URL encode.
         """
-        return original.replace(
-            pattern, new_text.replace("\\", "\\\\").replace('"', '\\"'))
+        return original.replace(pattern, new_text)
 
     def __replace_pattern_in_map(self,
                                  pattern: str,
@@ -55,10 +60,16 @@ class WebHandler(logging.Handler):
                                  original_dict: Dict[str, str]):
         new_dict = {}
         for k, v in original_dict.items():
-            new_k = self.__replace_pattern(
-                pattern=pattern, new_text=new_text, original=k)
-            new_v = self.__replace_pattern(
-                pattern=pattern, new_text=new_text, original=v)
+            if isinstance(k, str):
+                new_k = self.__replace_pattern(
+                    pattern=pattern, new_text=new_text, original=k)
+            else:
+                new_k = k
+            if isinstance(v, str):
+                new_v = self.__replace_pattern(
+                    pattern=pattern, new_text=new_text, original=v)
+            else:
+                new_v = v
             new_dict[new_k] = new_v
         return new_dict
 
@@ -69,8 +80,13 @@ class WebHandler(logging.Handler):
             pattern=message_pattern, new_text=message, original=self._url)
         headers = self.__replace_pattern_in_map(
             pattern=message_pattern, new_text=message, original_dict=self._headers)if self._headers else None
-        data = self.__replace_pattern(
-            pattern=message_pattern, new_text=message, original=self._body) if self._body else None
+        if self._json:
+            r = self.__replace_pattern_in_map(
+                pattern=message_pattern, new_text=message, original_dict=self._json)
+            data = json.dumps(r)
+        else:
+            data = self.__replace_pattern(
+                pattern=message_pattern, new_text=message, original=self._body) if self._body else None
         future = self.__executor.submit(
             self.__make_call, self._method, url, headers, data, self._auth)
         try:
