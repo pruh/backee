@@ -75,6 +75,9 @@ def __backup_files_to_server(transmitter: SshTransmitter,
                                     links_dir_path,
                                     temp_dir_suffix)
 
+    _check_remote_disk_space(
+        transmitter, links_dir_path, item, temp_dir_path, server_root_dir_path)
+
     transmitter.transmit(links_dir_path, item, temp_dir_path)
 
     transmitter.rename_dir(temp_dir_path, backup_dir_path)
@@ -94,6 +97,25 @@ def __backup_files_to_server(transmitter: SshTransmitter,
         log.debug(f"{item.name} backup finished")
     else:
         log.warning(f"{item.name} backup items differ from original items")
+
+
+def _check_remote_disk_space(
+        transmitter: SshTransmitter,
+        links_dir_path: str,
+        item: FilesBackupItem,
+        remote_path: str,
+        server_root_dir_path: str) -> None:
+    log.debug('checking available space')
+    transfer_size = transmitter.get_transfer_file_size(
+        links_dir_path=links_dir_path,
+        item=item,
+        remote_path=remote_path)
+    space_avail = transmitter.get_disk_space_available(server_root_dir_path)
+    if space_avail < transfer_size:
+        raise OSError(
+            f"not enoght space to backup {item.name},"
+            f" need {transfer_size - space_avail} bytes more")
+    log.debug(f"{space_avail} bytes available for {transfer_size} bytes backup")
 
 
 def _remove_old_backups(transmitter: SshTransmitter,

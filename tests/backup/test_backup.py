@@ -3,7 +3,7 @@ from unittest import mock
 from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 
-from backee.backup.backup import _remove_old_backups, _get_rotation_strategy, _check_item
+from backee.backup import backup
 from backee.model.rotation_strategy import RotationStrategy
 from backee.model.items import FilesBackupItem
 
@@ -37,11 +37,12 @@ class BackupTestCase(unittest.TestCase):
             tomorrow))
         transmitter.get_backup_names_sorted.return_value = sorted_dates
         rs = RotationStrategy(daily=2, monthly=0, yearly=0)
-        _remove_old_backups(transmitter=transmitter,
-                            server_root_dir_path='',
-                            rotation_strategy=rs,
-                            date_time_format=date_time_format,
-                            date_time_prefix='')
+        backup._remove_old_backups(
+            transmitter=transmitter,
+            server_root_dir_path='',
+            rotation_strategy=rs,
+            date_time_format=date_time_format,
+            date_time_prefix='')
 
         to_delete = tuple(sorted((
             two_days_ago,
@@ -82,11 +83,12 @@ class BackupTestCase(unittest.TestCase):
             three_months_ago)))
         transmitter.get_backup_names_sorted.return_value = sorted_dates
         rs = RotationStrategy(daily=0, monthly=2, yearly=0)
-        _remove_old_backups(transmitter=transmitter,
-                            server_root_dir_path='',
-                            rotation_strategy=rs,
-                            date_time_format=date_time_format,
-                            date_time_prefix=prefix)
+        backup._remove_old_backups(
+            transmitter=transmitter,
+            server_root_dir_path='',
+            rotation_strategy=rs,
+            date_time_format=date_time_format,
+            date_time_prefix=prefix)
 
         to_delete = tuple(sorted((
             future_monthly,
@@ -127,11 +129,12 @@ class BackupTestCase(unittest.TestCase):
             three_years_ago)))
         transmitter.get_backup_names_sorted.return_value = sorted_dates
         rs = RotationStrategy(daily=0, monthly=0, yearly=2)
-        _remove_old_backups(transmitter=transmitter,
-                            server_root_dir_path='',
-                            rotation_strategy=rs,
-                            date_time_format=date_time_format,
-                            date_time_prefix='')
+        backup._remove_old_backups(
+            transmitter=transmitter,
+            server_root_dir_path='',
+            rotation_strategy=rs,
+            date_time_format=date_time_format,
+            date_time_prefix='')
 
         to_delete = tuple(sorted((
             future_year,
@@ -157,11 +160,12 @@ class BackupTestCase(unittest.TestCase):
         sorted_dates = ((today),)
         transmitter.get_backup_names_sorted.return_value = sorted_dates
         rs = RotationStrategy(daily=0, monthly=0, yearly=0)
-        _remove_old_backups(transmitter=transmitter,
-                            server_root_dir_path='',
-                            rotation_strategy=rs,
-                            date_time_format=date_time_format,
-                            date_time_prefix='')
+        backup._remove_old_backups(
+            transmitter=transmitter,
+            server_root_dir_path='',
+            rotation_strategy=rs,
+            date_time_format=date_time_format,
+            date_time_prefix='')
 
         self.assertCountEqual(
             ((today),),
@@ -174,13 +178,13 @@ class BackupTestCase(unittest.TestCase):
         """
         server_strategy = RotationStrategy(10, 10, 10)
         item_strategy = RotationStrategy(20, 20, 20)
-        self.assertEqual(item_strategy, _get_rotation_strategy(
+        self.assertEqual(item_strategy, backup._get_rotation_strategy(
             server_strategy=server_strategy,
             item_strategy=item_strategy),
             msg='wrong rotation strategy is used')
 
         item_strategy = None
-        self.assertEqual(server_strategy, _get_rotation_strategy(
+        self.assertEqual(server_strategy, backup._get_rotation_strategy(
             server_strategy=server_strategy,
             item_strategy=item_strategy),
             msg='wrong rotation strategy is used')
@@ -203,16 +207,35 @@ class BackupTestCase(unittest.TestCase):
         exists.side_effect = side_effect
 
         # error is not raised when all files exists
-        self.assertIsNone(_check_item(FilesBackupItem(
+        self.assertIsNone(backup._check_item(FilesBackupItem(
             includes=(exists1, exists2),
             excludes=(),
             rotation_strategy=None)))
 
         # error is raised when any of the files missing
-        self.assertRaises(OSError, _check_item, FilesBackupItem(
+        self.assertRaises(OSError, backup._check_item, FilesBackupItem(
             includes=(exists1, exists2),
             excludes=(nonexistent,),
             rotation_strategy=None))
+
+    @unittest.mock.patch('backee.backup.transmitter.SshTransmitter')
+    def test_remote_disk_space(self, transmitter):
+        """
+        Test error is raised when there is no enough disk space.
+        """
+        transmitter.get_transfer_file_size.return_value = 2
+        transmitter.get_disk_space_available.return_value = 1
+
+        self.assertRaises(OSError,
+                          backup._check_remote_disk_space,
+                          transmitter,
+                          '',
+                          FilesBackupItem(
+                              includes=(),
+                              excludes=(),
+                              rotation_strategy=None),
+                          '',
+                          '')
 
 
 if __name__ == '__main__':
