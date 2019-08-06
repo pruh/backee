@@ -7,7 +7,7 @@ install:
   - pip install coverage
   - pip install coveralls
 script:
-  - python -m unittest
+  - coverage run --source backee -m unittest discover
 after_success: 
   - coverage report
   - coveralls
