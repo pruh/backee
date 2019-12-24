@@ -161,10 +161,11 @@ class SshTransmitter(Transmitter):
             return ''
 
     def __get_rsync_ssh_options(self) -> str:
+        options = f"--rsh=\"ssh -p {self.__server.port}"
         if self.__server.key_path:
-            return f"--rsh=\"ssh -i '{self.__server.key_path}' -p {self.__server.port}\" "
-        else:
-            return f"--rsh=\"ssh -p {self.__server.port}\" "
+            options += f" -i '{self.__server.key_path}'"
+        options += " -o StrictHostKeyChecking=no\""
+        return options
 
     def get_backup_names_sorted(self, server_root_dir_path: str) -> Tuple[str]:
         find_dirs = f"find {server_root_dir_path} -mindepth 1 -maxdepth 1 -type d | sort -t- -k1"
