@@ -209,5 +209,5 @@ def _check_item(item: BackupItem):
         for path in [*item.includes, *item.excludes]:
             if not os.path.exists(path):
                 raise OSError(f"file does not exist: {path}")
-        else:
-            log.info(f"unsupported backup item to check: {item.name}")
+    else:
+        log.info(f"unsupported backup item to check: {item.name}")
