@@ -13,7 +13,7 @@ from backee.model.rotation_strategy import RotationStrategy
 log = logging.getLogger(__name__)
 
 
-def backup(items: Tuple[BackupItem], servers: Tuple[BackupServer]) -> None:
+def backup(name: str, items: Tuple[BackupItem], servers: Tuple[BackupServer]) -> None:
     """
     Start backup process.
     """
@@ -22,6 +22,8 @@ def backup(items: Tuple[BackupItem], servers: Tuple[BackupServer]) -> None:
 
     for server in servers:
         __backup_to_server(items, server)
+
+    log.info(f"{name} was successfully backed up")
 
 
 def __backup_to_server(items: Tuple[BackupItem], server: BackupServer) -> None:
@@ -35,7 +37,7 @@ def __backup_to_server(items: Tuple[BackupItem], server: BackupServer) -> None:
         else:
             log.info(f"unsupported backup item: {item.name}")
 
-    log.info(f"backup to {server.name} finished")
+    log.debug(f"backup to {server.name} finished")
 
 
 def __create_transmitter(server: BackupServer) -> Transmitter:

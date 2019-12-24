@@ -18,7 +18,7 @@ def main():
 
     setup_config_loggers(config.loggers)
 
-    backup(config.backup_items, config.backup_servers)
+    backup(config.name, config.backup_items, config.backup_servers)
 
 
 def _get_args():
