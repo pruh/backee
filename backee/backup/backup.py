@@ -113,11 +113,12 @@ def _check_remote_disk_space(
         item=item,
         remote_path=remote_path)
     space_avail = transmitter.get_disk_space_available(server_root_dir_path)
+    log.debug(f"{space_avail} bytes available for {transfer_size} bytes backup")
     if space_avail < transfer_size:
         raise OSError(
-            f"not enoght space to backup {item.name},"
-            f" need {transfer_size - space_avail} bytes more")
-    log.debug(f"{space_avail} bytes available for {transfer_size} bytes backup")
+            f"not enough space to backup {item.name}, "
+            f"{transfer_size} bytes requred, but only {space_avail} bytes available, "
+            f"need {transfer_size - space_avail} bytes more")
 
 
 def _remove_old_backups(transmitter: SshTransmitter,

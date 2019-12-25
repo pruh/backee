@@ -268,7 +268,7 @@ class SshTransmitter(Transmitter):
         """
         Return available disk space in bytes.
         """
-        cmd = f"df -P {remote_path} | awk 'NR==2 {{print $4}}'"
+        cmd = f"df -P -B1 {remote_path} | awk 'NR==2 {{print $4}}'"
         return int(self.__execute_ssh_command(cmd))
 
     def __execute_ssh_command(self, command: str):
