@@ -127,11 +127,13 @@ class SshTransmitter(Transmitter):
                  remote_path: str) -> None:
         link_options = self.__get_link_dir_options(links_dir_path)
         ssh_optons = self.__get_rsync_ssh_options()
+        excludes = ' '.join(f'--exclude \"{s}\"' for s in item.excludes)
+        includes = ' '.join(f'\"{s}\"' for s in item.includes)
 
         rsync_cmd = f"rsync --archive --progress --compress {ssh_optons} " \
             f"--verbose --human-readable --relative {link_options} " \
-            f"{' '.join(f'--exclude {s}' for s in item.excludes)} " \
-            f"{' '.join(item.includes)} " \
+            f"{excludes} " \
+            f"{includes} " \
             f"{self.__server.username}@{self.__server.hostname}:{remote_path}"
 
         with subprocess.Popen(
@@ -178,10 +180,13 @@ class SshTransmitter(Transmitter):
         log.debug(f"verifing backup")
 
         ssh_optons = self.__get_rsync_ssh_options()
+        excludes = ' '.join(f'--exclude \"{s}\"' for s in item.excludes)
+        includes = ' '.join(f'\"{s}\"' for s in item.includes)
+
         rsync_cmd = "rsync --archive --verbose --hard-links --progress " \
             f"--itemize-changes --dry-run --compress --relative {ssh_optons} " \
-            f"{' '.join(f'--exclude {s}' for s in item.excludes)} " \
-            f"{' '.join(item.includes)} " \
+            f"{excludes} " \
+            f"{includes} " \
             f"{self.__server.username}@{self.__server.hostname}:{remote_path}"
 
         no_errors = True
@@ -223,11 +228,13 @@ class SshTransmitter(Transmitter):
         """
         link_options = self.__get_link_dir_options(links_dir_path)
         ssh_optons = self.__get_rsync_ssh_options()
+        excludes = ' '.join(f'--exclude \"{s}\"' for s in item.excludes)
+        includes = ' '.join(f'\"{s}\"' for s in item.includes)
 
         rsync_cmd = "rsync --archive --stats --compress " \
             f" --dry-run --relative {ssh_optons} {link_options} " \
-            f"{' '.join(f'--exclude {s}' for s in item.excludes)} " \
-            f"{' '.join(item.includes)} " \
+            f"{excludes} " \
+            f"{includes} " \
             f"{self.__server.username}@{self.__server.hostname}:{remote_path}"
 
         transfer_size = 0
