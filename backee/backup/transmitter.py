@@ -199,11 +199,13 @@ class SshTransmitter(Transmitter):
                 universal_newlines=True) as rsync_proc:
             error_pattern = "^[<>]"
             warn_pattern = "^\."
+            # skip warning for directories if their timestamp changed since backup
+            false_positive = ".d..t",
             for line in rsync_proc.stdout:
                 fmt_line = line.rstrip()
-                log.debug(fmt_line)
-                if re.findall(warn_pattern, fmt_line) or \
-                        re.findall(error_pattern, fmt_line):
+                if (re.findall(warn_pattern, fmt_line) or
+                        re.findall(error_pattern, fmt_line)) and \
+                        not fmt_line.startswith(false_positive):
                     no_errors = False
                     log.debug(f"{fmt_line} is different")
                     break
