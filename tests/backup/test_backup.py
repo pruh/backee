@@ -182,6 +182,45 @@ class BackupTestCase(unittest.TestCase):
         )
 
     @unittest.mock.patch("backee.backup.transmitter.SshTransmitter")
+    def test_many_old_backups(self, transmitter):
+        date_time_format = "%Y-%m-%d-%H-%M"
+        prefix = ""
+        today = date.today()
+        sorted_dates = []
+        for day in range(366, -1, -1):
+            sorted_dates.append(
+                prefix + (today + relativedelta(days=-day)).strftime(date_time_format)
+            )
+
+        transmitter.get_backup_names_sorted.return_value = sorted_dates
+        rs = RotationStrategy(daily=1, monthly=1, yearly=1)
+        backup._remove_old_backups(
+            transmitter=transmitter,
+            server_root_dir_path="",
+            rotation_strategy=rs,
+            date_time_format=date_time_format,
+            date_time_prefix=prefix,
+        )
+
+        to_delete = sorted_dates.copy()
+        daily = prefix + today.strftime(date_time_format)
+        monthly = prefix + date(day=1, month=today.month, year=today.year).strftime(
+            date_time_format
+        )
+        yearly = prefix + date(day=1, month=1, year=today.year).strftime(
+            date_time_format
+        )
+        to_delete.remove(daily)
+        to_delete.remove(monthly)
+        to_delete.remove(yearly)
+
+        self.assertListEqual(
+            to_delete,
+            list(transmitter.remove_remote_dirs.call_args_list[0][0][0]),
+            msg="wrong number of backups to delete",
+        )
+
+    @unittest.mock.patch("backee.backup.transmitter.SshTransmitter")
     def test_zero_rotation_strategy(self, transmitter):
         """
         Test if rotation strategy has 0, than that backups will be removed.

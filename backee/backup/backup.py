@@ -140,6 +140,7 @@ def _remove_old_backups(
             backup_date, now, now + relativedelta(days=-rotation_strategy.daily + 1)
         ):
             daily_backups.append(backup)
+
         if (
             rotation_strategy.monthly > 0
             and len(monthly_backups) < rotation_strategy.monthly
@@ -154,6 +155,7 @@ def _remove_old_backups(
             )
         ):
             monthly_backups.append(backup)
+
         if (
             rotation_strategy.yearly > 0
             and len(yearly_backups) < rotation_strategy.yearly
@@ -169,11 +171,13 @@ def _remove_old_backups(
             )
         ):
             yearly_backups.append(backup)
+
     exclude = set(daily_backups)
     exclude.update(monthly_backups)
     exclude.update(yearly_backups)
 
     to_delete = tuple([x for x in backups if x not in exclude])
+
     if len(to_delete) == 0:
         log.debug("no outdated backups")
         return
