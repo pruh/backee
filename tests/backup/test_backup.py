@@ -184,7 +184,7 @@ class BackupTestCase(unittest.TestCase):
     @unittest.mock.patch("backee.backup.transmitter.SshTransmitter")
     def test_many_old_backups(self, transmitter):
         date_time_format = "%Y-%m-%d-%H-%M"
-        prefix = ""
+        prefix = "prefix-"
         today = date.today()
         sorted_dates = []
         for day in range(366, -1, -1):
