@@ -28,13 +28,16 @@ def parse_contents(contents: str) -> Config:
     contents = os.path.expandvars(contents)
     yml_config = yaml.full_load(contents)
 
-    name = yml_config['settings']['name']
+    name = yml_config["settings"]["name"]
 
     rotation_strategy = parse_rotation_strategy(
-        data=yml_config.get('rotation_strategy'))
+        data=yml_config.get("rotation_strategy")
+    )
     return Config(
         name=name,
-        loggers=parse_loggers(loggers=yml_config.get('loggers'), name=name),
-        backup_servers=parse_servers(servers=yml_config.get('servers'),
-                                     default_rs=rotation_strategy),
-        backup_items=parse_items(items=yml_config.get('backup_items')))
+        loggers=parse_loggers(loggers=yml_config.get("loggers"), name=name),
+        backup_servers=parse_servers(
+            servers=yml_config.get("servers"), default_rs=rotation_strategy
+        ),
+        backup_items=parse_items(items=yml_config.get("backup_items")),
+    )

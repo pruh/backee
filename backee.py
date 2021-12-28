@@ -3,7 +3,11 @@ import argparse
 import logging
 
 from backee.parser.config_parser import parse_config
-from backee.logger.loggers import setup_default_loggers, setup_config_loggers, setup_uncaught_exceptions_logger
+from backee.logger.loggers import (
+    setup_default_loggers,
+    setup_config_loggers,
+    setup_uncaught_exceptions_logger,
+)
 from backee.backup.backup import backup
 
 
@@ -23,17 +27,19 @@ def main():
 
 def _get_args():
     parser = argparse.ArgumentParser(
-        description='backee is a script for backup directories, files, databases and docker data volumes.')
-    config_default_path = 'backee/config.yml'
+        description="backee is a script for backup directories, files, databases and docker data volumes."
+    )
+    config_default_path = "backee/config.yml"
     parser.add_argument(
-        '-c',
-        '--config',
-        action='store',
+        "-c",
+        "--config",
+        action="store",
         default=config_default_path,
         type=str,
-        help=f"path to config file (default: {config_default_path})")
+        help=f"path to config file (default: {config_default_path})",
+    )
     return parser.parse_args()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()

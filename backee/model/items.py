@@ -23,7 +23,7 @@ class FilesBackupItem(BackupItem):
 
     @property
     def name(self):
-        return 'files'
+        return "files"
 
 
 @dataclass
@@ -32,7 +32,7 @@ class DatabaseBackupItem(BackupItem):
 
     @property
     def name(self):
-        return 'databases'
+        return "databases"
 
 
 @dataclass
@@ -48,4 +48,4 @@ class DockerDataVolumesBackupItem(BackupItem):
 
     @property
     def name(self):
-        return 'docker'
+        return "docker"

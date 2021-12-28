@@ -13,7 +13,8 @@ def setup_default_loggers() -> None:
     __setup_global_logging_levels()
 
     formatter = logging.Formatter(
-        '%(asctime)s [%(threadName)18s][%(module)14s][%(levelname)8s] %(message)s')
+        "%(asctime)s [%(threadName)18s][%(module)14s][%(levelname)8s] %(message)s"
+    )
 
     # Redirect messages lower or equal than INFO to stdout
     stdout_hdlr = logging.StreamHandler(sys.stdout)
@@ -57,5 +58,7 @@ def __handle_exception(exc_type, exc_value, exc_traceback):
         sys.__excepthook__(exc_type, exc_value, exc_traceback)
         return
 
-    log.error(f"Uncaught exception: {exc_value}",
-              exc_info=(exc_type, exc_value, exc_traceback))
+    log.error(
+        f"Uncaught exception: {exc_value}",
+        exc_info=(exc_type, exc_value, exc_traceback),
+    )

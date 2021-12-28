@@ -21,11 +21,10 @@ class Transmitter(object):
 
 
 class SshTransmitter(Transmitter):
-
     def __init__(self, server: SshBackupServer):
         self.__server = server
 
-        deps = ('rsync',)
+        deps = ("rsync",)
         self.__check_deps(deps)
 
         self.ssh = SSHClient()
@@ -35,40 +34,46 @@ class SshTransmitter(Transmitter):
     def is_remote_dir_exist(self, path: str) -> bool:
         log.debug(f"check existence of {path}")
         exists = self.__execute_ssh_command(
-            f"if [ -d '{path}' ]; then echo true; else echo false; fi;")
-        return exists == 'true'
+            f"if [ -d '{path}' ]; then echo true; else echo false; fi;"
+        )
+        return exists == "true"
 
     def create_dir(self, path: str) -> None:
         log.debug(f"create directory: {path}")
         result = self.__execute_ssh_command(f"mkdir -p '{path}'; echo $?")
-        if result != '0':
+        if result != "0":
             raise OSError(f"cannot create directory {path}")
 
     def remove_remote_dir_if_exists(self, path: str) -> None:
         if self.is_remote_dir_exist(path):
-            self.remove_remote_dirs((path),)
+            self.remove_remote_dirs(
+                (path),
+            )
 
     def remove_remote_dirs(self, dirs_paths: Tuple[str]) -> None:
         log.debug(f"remove directories {dirs_paths}")
-        rm_arg = ' '.join(x for x in dirs_paths)
+        rm_arg = " ".join(x for x in dirs_paths)
         result = self.__execute_ssh_command(f"rm -r '{rm_arg}'; echo $?")
-        if result != '0':
+        if result != "0":
             raise OSError(f"cannot remove directories {dirs_paths}")
 
     def check_temp_dirs(self, backup_dir_path: str, temp_dir_suffix: str) -> bool:
         log.debug(f"checking for temp dirs in {backup_dir_path}")
 
         result = self.__execute_ssh_command(
-            f"find '{backup_dir_path}' -mindepth 1 -maxdepth 1 -type d -name '*{temp_dir_suffix}' | wc -l")
+            f"find '{backup_dir_path}' -mindepth 1 -maxdepth 1 -type d -name '*{temp_dir_suffix}' | wc -l"
+        )
 
-        if result != '0':
+        if result != "0":
             log.error(f"some temp dirs are in {backup_dir_path}")
 
-    def check_links_dir(self,
-                        server_root_dir_path: str,
-                        item_name: str,
-                        links_dir_path: str,
-                        temp_dir_suffix: str) -> None:
+    def check_links_dir(
+        self,
+        server_root_dir_path: str,
+        item_name: str,
+        links_dir_path: str,
+        temp_dir_suffix: str,
+    ) -> None:
         """
         Check if links directory exists and recreate if not.
         Last backup will be used to link to.
@@ -82,25 +87,28 @@ class SshTransmitter(Transmitter):
         log.debug("links directory not found, create a new one")
 
         last_backup_dir = self.__get_last_backup_dir(
-            server_root_dir_path, temp_dir_suffix)
+            server_root_dir_path, temp_dir_suffix
+        )
         if not last_backup_dir:
             log.debug("backup dir for re-linking is not found")
             return
 
-        log.debug(f'found last backup dir: {last_backup_dir}')
+        log.debug(f"found last backup dir: {last_backup_dir}")
         if self.recreate_links_dir(last_backup_dir, links_dir_path):
             log.debug("links dir re-created")
         else:
             log.debug("cannot re-create links dir")
 
-    def __get_last_backup_dir(self,
-                              server_root_dir_path: str,
-                              temp_dir_suffix: str) -> Optional[str]:
+    def __get_last_backup_dir(
+        self, server_root_dir_path: str, temp_dir_suffix: str
+    ) -> Optional[str]:
         log.debug(f"looking for last backup dir in {server_root_dir_path}")
 
-        command = f"find '{server_root_dir_path}' -mindepth 1 -maxdepth 1 " \
-            "-type d ! -name '*{temp_dir_suffix}' " \
+        command = (
+            f"find '{server_root_dir_path}' -mindepth 1 -maxdepth 1 "
+            "-type d ! -name '*{temp_dir_suffix}' "
             "| sort -t- -k1 | tail -1"
+        )
         last_backup_dir = self.__execute_ssh_command(command)
 
         return last_backup_dir
@@ -108,51 +116,56 @@ class SshTransmitter(Transmitter):
     def recreate_links_dir(self, last_backup_dir: str, links_dir_path: str) -> None:
         log.debug(f"re-link '{last_backup_dir}' to '{links_dir_path}'")
         result = self.__execute_ssh_command(
-            f"rm -f '{links_dir_path}' && ln -s '{last_backup_dir}' '{links_dir_path}'; echo $?")
-        if result != '0':
+            f"rm -f '{links_dir_path}' && ln -s '{last_backup_dir}' '{links_dir_path}'; echo $?"
+        )
+        if result != "0":
             raise OSError(
-                f"Cannot re-link directory {last_backup_dir} to {links_dir_path}")
+                f"Cannot re-link directory {last_backup_dir} to {links_dir_path}"
+            )
 
     def rename_dir(self, prev_name: str, new_name: str) -> None:
         log.debug(f"rename {prev_name} to {new_name}")
-        result = self.__execute_ssh_command(
-            f"mv '{prev_name}' '{new_name}'; echo $?")
-        if result != '0':
-            raise OSError(
-                f"Cannot rename directory {prev_name} to {new_name}")
+        result = self.__execute_ssh_command(f"mv '{prev_name}' '{new_name}'; echo $?")
+        if result != "0":
+            raise OSError(f"Cannot rename directory {prev_name} to {new_name}")
 
-    def transmit(self,
-                 links_dir_path: str,
-                 item: FilesBackupItem,
-                 remote_path: str) -> None:
+    def transmit(
+        self, links_dir_path: str, item: FilesBackupItem, remote_path: str
+    ) -> None:
         link_options = self.__get_link_dir_options(links_dir_path)
         ssh_optons = self.__get_rsync_ssh_options()
-        excludes = ' '.join(f'--exclude \"{s}\"' for s in item.excludes)
-        includes = ' '.join(f'\"{s}\"' for s in item.includes)
+        excludes = " ".join(f'--exclude "{s}"' for s in item.excludes)
+        includes = " ".join(f'"{s}"' for s in item.includes)
 
-        rsync_cmd = f"rsync --archive --progress --compress {ssh_optons} " \
-            f"--verbose --human-readable --relative {link_options} " \
-            f"{excludes} " \
-            f"{includes} " \
+        rsync_cmd = (
+            f"rsync --archive --progress --compress {ssh_optons} "
+            f"--verbose --human-readable --relative {link_options} "
+            f"{excludes} "
+            f"{includes} "
             f"{self.__server.username}@{self.__server.hostname}:{remote_path}"
+        )
 
         with subprocess.Popen(
-                rsync_cmd,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                bufsize=1,
-                universal_newlines=True) as rsync_proc:
+            rsync_cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            bufsize=1,
+            universal_newlines=True,
+        ) as rsync_proc:
             for line in rsync_proc.stdout:
                 log.debug(line.rstrip())
 
             exit_code = rsync_proc.wait()
             if exit_code != 0:
                 stderr = "\n".join(
-                    map(lambda s: s.rstrip(), rsync_proc.stderr.readlines()))
-                log.error(f"rsync finished with non-zero exit code {exit_code} "
-                          f"and stderr: {stderr}")
-                raise OSError(f'Cannot transfer to {remote_path}')
+                    map(lambda s: s.rstrip(), rsync_proc.stderr.readlines())
+                )
+                log.error(
+                    f"rsync finished with non-zero exit code {exit_code} "
+                    f"and stderr: {stderr}"
+                )
+                raise OSError(f"Cannot transfer to {remote_path}")
 
     def __get_link_dir_options(self, links_dir_path: str) -> str:
         if self.is_remote_dir_exist(links_dir_path):
@@ -160,52 +173,53 @@ class SshTransmitter(Transmitter):
             return "--link-dest=" + links_dir_path
         else:
             log.debug("links dir not found")
-            return ''
+            return ""
 
     def __get_rsync_ssh_options(self) -> str:
-        options = f"--rsh=\"ssh -p {self.__server.port}"
+        options = f'--rsh="ssh -p {self.__server.port}'
         if self.__server.key_path:
             options += f" -i '{self.__server.key_path}'"
-        options += " -o StrictHostKeyChecking=no\""
+        options += ' -o StrictHostKeyChecking=no"'
         return options
 
     def get_backup_names_sorted(self, server_root_dir_path: str) -> Tuple[str]:
         find_dirs = f"find {server_root_dir_path} -mindepth 1 -maxdepth 1 -type d | sort -t- -k1"
         return tuple(self.__execute_ssh_command(find_dirs).split(", "))
 
-    def verify_backup(
-            self,
-            item: FilesBackupItem,
-            remote_path: str) -> bool:
+    def verify_backup(self, item: FilesBackupItem, remote_path: str) -> bool:
         log.debug(f"verifing backup")
 
         ssh_optons = self.__get_rsync_ssh_options()
-        excludes = ' '.join(f'--exclude \"{s}\"' for s in item.excludes)
-        includes = ' '.join(f'\"{s}\"' for s in item.includes)
+        excludes = " ".join(f'--exclude "{s}"' for s in item.excludes)
+        includes = " ".join(f'"{s}"' for s in item.includes)
 
-        rsync_cmd = "rsync --archive --verbose --hard-links --progress " \
-            f"--itemize-changes --dry-run --compress --relative {ssh_optons} " \
-            f"{excludes} " \
-            f"{includes} " \
+        rsync_cmd = (
+            "rsync --archive --verbose --hard-links --progress "
+            f"--itemize-changes --dry-run --compress --relative {ssh_optons} "
+            f"{excludes} "
+            f"{includes} "
             f"{self.__server.username}@{self.__server.hostname}:{remote_path}"
+        )
 
         no_errors = True
         with subprocess.Popen(
-                rsync_cmd,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                bufsize=1,
-                universal_newlines=True) as rsync_proc:
+            rsync_cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            bufsize=1,
+            universal_newlines=True,
+        ) as rsync_proc:
             error_pattern = "^[<>]"
             warn_pattern = "^\."
             # skip warning for directories if their timestamp changed since backup
-            false_positive = ".d..t",
+            false_positive = (".d..t",)
             for line in rsync_proc.stdout:
                 fmt_line = line.rstrip()
-                if (re.findall(warn_pattern, fmt_line) or
-                        re.findall(error_pattern, fmt_line)) and \
-                        not fmt_line.startswith(false_positive):
+                if (
+                    re.findall(warn_pattern, fmt_line)
+                    or re.findall(error_pattern, fmt_line)
+                ) and not fmt_line.startswith(false_positive):
                     no_errors = False
                     log.debug(f"{fmt_line} is different")
                     break
@@ -213,56 +227,63 @@ class SshTransmitter(Transmitter):
             exit_code = rsync_proc.wait()
             if exit_code != 0:
                 stderr = "\n".join(
-                    map(lambda s: s.rstrip(), rsync_proc.stderr.readlines()))
-                log.error(f"rsync finished with non-zero exit code {exit_code} "
-                          f"and stderr: {stderr}")
-                raise OSError(f'Cannot transfer to {remote_path}')
+                    map(lambda s: s.rstrip(), rsync_proc.stderr.readlines())
+                )
+                log.error(
+                    f"rsync finished with non-zero exit code {exit_code} "
+                    f"and stderr: {stderr}"
+                )
+                raise OSError(f"Cannot transfer to {remote_path}")
 
         return no_errors
 
     def get_transfer_file_size(
-            self,
-            links_dir_path: str,
-            item: FilesBackupItem,
-            remote_path: str) -> int:
+        self, links_dir_path: str, item: FilesBackupItem, remote_path: str
+    ) -> int:
         """
         Get size of items in bytes that need to be transfered.
         """
         link_options = self.__get_link_dir_options(links_dir_path)
         ssh_optons = self.__get_rsync_ssh_options()
-        excludes = ' '.join(f'--exclude \"{s}\"' for s in item.excludes)
-        includes = ' '.join(f'\"{s}\"' for s in item.includes)
+        excludes = " ".join(f'--exclude "{s}"' for s in item.excludes)
+        includes = " ".join(f'"{s}"' for s in item.includes)
 
-        rsync_cmd = "rsync --archive --stats --compress " \
-            f" --dry-run --relative {ssh_optons} {link_options} " \
-            f"{excludes} " \
-            f"{includes} " \
+        rsync_cmd = (
+            "rsync --archive --stats --compress "
+            f" --dry-run --relative {ssh_optons} {link_options} "
+            f"{excludes} "
+            f"{includes} "
             f"{self.__server.username}@{self.__server.hostname}:{remote_path}"
+        )
 
         transfer_size = 0
         with subprocess.Popen(
-                rsync_cmd,
-                shell=True,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                bufsize=1,
-                universal_newlines=True) as rsync_proc:
-            line_start = 'Total transferred file size: '
+            rsync_cmd,
+            shell=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            bufsize=1,
+            universal_newlines=True,
+        ) as rsync_proc:
+            line_start = "Total transferred file size: "
             for line in rsync_proc.stdout:
                 fmt_line = line.rstrip()
                 log.debug(fmt_line)
                 if line_start in fmt_line:
-                    transfer_size = int(re.search('\d+', fmt_line).group())
+                    transfer_size = int(re.search("\d+", fmt_line).group())
                     log.debug(f"transfer size is {transfer_size} bytes")
                     break
 
             exit_code = rsync_proc.wait()
             if exit_code != 0:
                 stderr = "\n".join(
-                    map(lambda s: s.rstrip(), rsync_proc.stderr.readlines()))
-                log.error(f"rsync finished with non-zero exit code {exit_code} "
-                          f"and stderr: {stderr}")
-                raise OSError(f'Cannot transfer to {remote_path}')
+                    map(lambda s: s.rstrip(), rsync_proc.stderr.readlines())
+                )
+                log.error(
+                    f"rsync finished with non-zero exit code {exit_code} "
+                    f"and stderr: {stderr}"
+                )
+                raise OSError(f"Cannot transfer to {remote_path}")
 
         return transfer_size
 
@@ -290,22 +311,27 @@ class SshTransmitter(Transmitter):
 
         _, stdout, stderr = self.ssh.exec_command(command)
 
-        stderr = '\n'.join(map(lambda s: s.rstrip(), stderr.readlines()))
+        stderr = "\n".join(map(lambda s: s.rstrip(), stderr.readlines()))
         if stderr:
             raise OSError(f"stderr is not empty: '{stderr}'")
 
-        return '\n'.join(map(lambda s: s.rstrip(), stdout.readlines()))
+        return "\n".join(map(lambda s: s.rstrip(), stdout.readlines()))
 
     def __is_connected(self) -> bool:
-        return self.ssh.get_transport() is not None and self.ssh.get_transport().is_active()
+        return (
+            self.ssh.get_transport() is not None
+            and self.ssh.get_transport().is_active()
+        )
 
     def __ensure_connection(self) -> None:
         if not self.__is_connected():
-            self.ssh.connect(hostname=self.__server.hostname,
-                             port=self.__server.port,
-                             username=self.__server.username,
-                             key_filename=self.__server.key_path,
-                             look_for_keys=self.__server.key_path == None)
+            self.ssh.connect(
+                hostname=self.__server.hostname,
+                port=self.__server.port,
+                username=self.__server.username,
+                key_filename=self.__server.key_path,
+                look_for_keys=self.__server.key_path == None,
+            )
 
     def __check_deps(self, deps: Tuple[str]) -> None:
         """
@@ -313,13 +339,14 @@ class SshTransmitter(Transmitter):
         """
         for dep in deps:
             cmd = f"hash {dep}"
-            with subprocess.Popen(cmd,
-                                  shell=True,
-                                  stdout=subprocess.PIPE,
-                                  stderr=subprocess.PIPE,
-                                  bufsize=1,
-                                  universal_newlines=True) as proc:
+            with subprocess.Popen(
+                cmd,
+                shell=True,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                bufsize=1,
+                universal_newlines=True,
+            ) as proc:
                 exit_code = proc.wait()
                 if exit_code != 0:
-                    raise OSError(
-                        f"{dep} is not installed, but required")
+                    raise OSError(f"{dep} is not installed, but required")
