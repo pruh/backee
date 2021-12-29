@@ -52,9 +52,13 @@ class SshTransmitter(Transmitter):
             )
 
     def remove_remote_dirs(self, dirs_paths: Tuple[str]) -> None:
-        log.debug(f"remove directories {dirs_paths}")
-        rm_arg = " ".join(x for x in dirs_paths)
-        result = self.__execute_ssh_command(f"rm -r '{rm_arg}'; echo $?")
+        log.debug("remove directories %s", {dirs_paths})
+        remove_command = (
+            "items=("
+            + " ".join(f'"{item}"' for item in dirs_paths)
+            + '); for item in ${items[*]}; do rm -rf "$item"; done'
+        )
+        result = self.__execute_ssh_command(f"{remove_command}; echo $?")
         if result != "0":
             raise OSError(f"cannot remove directories {dirs_paths}")
 
@@ -295,7 +299,7 @@ class SshTransmitter(Transmitter):
         cmd = f"df -P -B1 {remote_path} | awk 'NR==2 {{print $4}}'"
         return int(self.__execute_ssh_command(cmd))
 
-    def __execute_ssh_command(self, command: str):
+    def __execute_ssh_command(self, command: str) -> str:
         """
         Executes SSH command on the server.
 
