@@ -2,12 +2,11 @@ import json
 import logging
 from logging import LogRecord
 
+from concurrent.futures import ThreadPoolExecutor
+from typing import Dict, Tuple, Optional, Any
+
 import requests
 from requests.auth import HTTPBasicAuth
-
-from concurrent.futures import ThreadPoolExecutor
-
-from typing import Dict, Tuple, Optional, Any
 
 
 class WebHandler(logging.Handler):
@@ -121,7 +120,7 @@ class WebHandler(logging.Handler):
             self.__create_logger().exception("error while sending web log message")
 
     def __format(self, record):
-        return record.msg
+        return (record.msg[:4000] + "…") if len(record.msg) > 4000 else record.msg
 
     def __make_call(
         self,
