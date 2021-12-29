@@ -1,6 +1,9 @@
 import unittest
 import subprocess
 
+from unittest import mock
+from unittest.mock import Mock
+
 from backee.model.items import FilesBackupItem
 from backee.model.servers import SshBackupServer
 from backee.model.rotation_strategy import RotationStrategy
@@ -9,7 +12,7 @@ from backee.backup.transmitter import SshTransmitter
 
 
 class SshTransmitterTestCase(unittest.TestCase):
-    @unittest.mock.patch("subprocess.Popen")
+    @mock.patch("subprocess.Popen")
     def test_backup_verified(self, subprocess):
         item = FilesBackupItem(
             includes=(("/a/b/c"),), excludes=(("/a/b/c/d"),), rotation_strategy=None
@@ -30,7 +33,7 @@ class SshTransmitterTestCase(unittest.TestCase):
         self.assertTrue(transmitter.verify_backup(item, "/remote_path"))
         self.assertTrue(subprocess.called)
 
-    @unittest.mock.patch("subprocess.Popen")
+    @mock.patch("subprocess.Popen")
     def test_backup_verified_warning(self, subprocess):
         item = FilesBackupItem(
             includes=(("/a/b/c"),), excludes=(("/a/b/c/d"),), rotation_strategy=None
@@ -51,7 +54,7 @@ class SshTransmitterTestCase(unittest.TestCase):
         self.assertFalse(transmitter.verify_backup(item, "/remote_path"))
         self.assertTrue(subprocess.called)
 
-    @unittest.mock.patch("subprocess.Popen")
+    @mock.patch("subprocess.Popen")
     def test_backup_verified_error(self, subprocess):
         item = FilesBackupItem(
             includes=(("/a/b/c"),), excludes=(("/a/b/c/d"),), rotation_strategy=None
@@ -72,15 +75,26 @@ class SshTransmitterTestCase(unittest.TestCase):
         self.assertFalse(transmitter.verify_backup(item, "/remote_path"))
         self.assertTrue(subprocess.called)
 
-    def __get_subprocess_mock(
-        self, stdout: str, stderr: str = ""
-    ) -> unittest.mock.Mock:
-        process_mock = unittest.mock.Mock()
+    def test_get_backup_names_sorted(self):
+        ssh = Mock()
+        stdout = Mock()
+        stdout.readlines.return_value = ["a\nb\nc"]
+        stderr = Mock()
+        stderr.readlines.return_value = []
+        ssh.exec_command.return_value = tuple([None, stdout, stderr])
+
+        transmitter = SshTransmitter(server=Mock(), ssh_client=ssh)
+        self.assertEquals(
+            tuple(["a", "b", "c"]), transmitter.get_backup_names_sorted("/remote_path")
+        )
+
+    def __get_subprocess_mock(self, stdout: str, stderr: str = "") -> Mock:
+        process_mock = Mock()
         attrs = {
-            "__enter__": unittest.mock.Mock(return_value=process_mock),
-            "__exit__": unittest.mock.Mock(return_value=None),
+            "__enter__": Mock(return_value=process_mock),
+            "__exit__": Mock(return_value=None),
             "stdout": stdout,
-            "stderr": "",
+            "stderr": stderr,
             "wait.return_value": 0,
         }
         process_mock.configure_mock(**attrs)

@@ -1,5 +1,3 @@
-import os
-from datetime import datetime
 import logging
 import subprocess
 import re
@@ -21,15 +19,18 @@ class Transmitter(object):
 
 
 class SshTransmitter(Transmitter):
-    def __init__(self, server: SshBackupServer):
+    def __init__(self, server: SshBackupServer, ssh_client: SSHClient = None):
         self.__server = server
 
         deps = ("rsync",)
         self.__check_deps(deps)
 
-        self.ssh = SSHClient()
-        self.ssh.load_system_host_keys()
-        self.ssh.set_missing_host_key_policy(AutoAddPolicy())
+        if ssh_client is None:
+            self.ssh = SSHClient()
+            self.ssh.load_system_host_keys()
+            self.ssh.set_missing_host_key_policy(AutoAddPolicy())
+        else:
+            self.ssh = ssh_client
 
     def is_remote_dir_exist(self, path: str) -> bool:
         log.debug(f"check existence of {path}")
@@ -184,10 +185,10 @@ class SshTransmitter(Transmitter):
 
     def get_backup_names_sorted(self, server_root_dir_path: str) -> Tuple[str]:
         find_dirs = f"find {server_root_dir_path} -mindepth 1 -maxdepth 1 -type d | sort -t- -k1"
-        return tuple(self.__execute_ssh_command(find_dirs).split(", "))
+        return tuple(self.__execute_ssh_command(find_dirs).split("\n"))
 
     def verify_backup(self, item: FilesBackupItem, remote_path: str) -> bool:
-        log.debug(f"verifing backup")
+        log.debug("verifing backup")
 
         ssh_optons = self.__get_rsync_ssh_options()
         excludes = " ".join(f'--exclude "{s}"' for s in item.excludes)
@@ -330,7 +331,7 @@ class SshTransmitter(Transmitter):
                 port=self.__server.port,
                 username=self.__server.username,
                 key_filename=self.__server.key_path,
-                look_for_keys=self.__server.key_path == None,
+                look_for_keys=self.__server.key_path is None,
             )
 
     def __check_deps(self, deps: Tuple[str]) -> None:
