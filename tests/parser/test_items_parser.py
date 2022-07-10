@@ -23,10 +23,16 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
     Tests for `backee/parser/items_parser.py`.
     """
 
-    def test_file_items_all_values_parsed(self):
+    @unittest.mock.patch("os.path.exists")
+    def test_file_items_all_values_parsed(self, exists):
         """
         All possible values are set and parsed correctly.
         """
+        def exists_side_effect(path):
+            return True
+
+        exists.side_effect = exists_side_effect
+
         expected_file_item = self.__create_file_item(
             includes=(
                 "/path/to/include1",
@@ -50,7 +56,8 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         """
         Only default values are set and parsed correctly.
         """
-        self.assertIsNone(parse_items(None), msg="backup items should be empty")
+        self.assertIsNone(parse_items(
+            None), msg="backup items should be empty")
 
     def test_empty_backup_items_parsed(self):
         """
@@ -160,22 +167,53 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         self.assertEqual((), item.excludes, msg="excludes parsed incirrectly")
 
     @unittest.mock.patch("os.path.expanduser")
-    def test_paths_expanded(self, expanduser):
+    @unittest.mock.patch("os.path.exists")
+    def test_paths_expanded(self, exists, expanduser):
         """
         Test that ~ in path to local file items is expanded
         """
-
-        def side_effect(path: str):
+        def expanduser_side_effect(path: str):
             if "~" in path:
                 return path.replace("~", "/a")
             else:
                 return path
 
-        expanduser.side_effect = side_effect
-        item = {"files": {"includes": ["~/b/c", "/d/e/f"], "excludes": ["~/y/z"]}}
+        expanduser.side_effect = expanduser_side_effect
+
+        def exists_side_effect(path):
+            return True
+
+        exists.side_effect = exists_side_effect
+
+        item = {"files": {"includes": [
+            "~/b/c", "/d/e/f"], "excludes": ["~/y/z"]}}
         parsed = parse_items(item)
-        self.assertCountEqual(parsed[0].includes, ["/a/b/c", "/d/e/f"])
-        self.assertCountEqual(parsed[0].excludes, ["/a/y/z"])
+        self.assertEqual(parsed[0].includes, tuple(["/a/b/c", "/d/e/f"]))
+        self.assertEqual(parsed[0].excludes, tuple(["/a/y/z"]))
+
+    @unittest.mock.patch("os.path.exists")
+    def test_nonexistent_items_skipped(self, exists):
+        """
+        Test when file backup item does not exists it is removed from the results.
+        """
+        exists1 = "/a/b/c"
+        exists2 = "/d/e/f"
+        nonexistent1 = "/g/h/i"
+        nonexistent2 = "/j/k/l"
+
+        def side_effect(path):
+            if path == exists1 or path == exists2:
+                return True
+            else:
+                return False
+
+        exists.side_effect = side_effect
+
+        item = {"files": {"includes": [
+            exists1, nonexistent1], "excludes": [exists2, nonexistent2]}}
+        parsed = parse_items(item)
+        self.assertEqual(parsed[0].includes, tuple(["/a/b/c"]))
+        self.assertEqual(parsed[0].excludes, tuple(["/d/e/f"]))
 
     def __create_file_item(
         self,

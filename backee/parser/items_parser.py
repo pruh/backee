@@ -1,4 +1,5 @@
 import os
+import logging
 from typing import Dict, Tuple, List, Optional, Any
 
 from backee.parser.db_connector_parser import parse_db_connector
@@ -14,13 +15,18 @@ from backee.model.rotation_strategy import RotationStrategy
 from backee.parser.rotation_strategy_parser import parse_rotation_strategy
 
 
+log = logging.getLogger(__name__)
+
+
 def __parse_files(item: Dict[str, Any]) -> FilesBackupItem:
     if "includes" in item:
-        includes = tuple([os.path.expanduser(x) for x in item.get("includes")])
+        includes = tuple([os.path.expanduser(x)
+                         for x in item.get("includes") if __path_exists(x)])
     else:
         includes = ()
     if "excludes" in item:
-        excludes = tuple([os.path.expanduser(x) for x in item.get("excludes")])
+        excludes = tuple([os.path.expanduser(x)
+                         for x in item.get("excludes") if __path_exists(x)])
     else:
         excludes = ()
     return FilesBackupItem(
@@ -30,6 +36,14 @@ def __parse_files(item: Dict[str, Any]) -> FilesBackupItem:
         if "rotation_strategy" in item
         else None,
     )
+
+
+def __path_exists(path: str) -> bool:
+    if not os.path.exists(path):
+        log.error("file backup item does not exist: %s", path)
+        return False
+
+    return True
 
 
 def __parse_mysql_item(item: Dict[str, Any]) -> MysqlBackupItem:
@@ -66,7 +80,8 @@ def __parse_docker_volumes(
         result.append(
             DockerDataVolumesBackupItem(
                 volume=volume,
-                rotation_strategy=parse_rotation_strategy(item["rotation_strategy"])
+                rotation_strategy=parse_rotation_strategy(
+                    item["rotation_strategy"])
                 if "rotation_strategy" in item
                 else None,
             )

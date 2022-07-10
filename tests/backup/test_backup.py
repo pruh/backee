@@ -14,13 +14,17 @@ class BackupTestCase(unittest.TestCase):
         date_time_format = "%Y-%m-%d-%H-%M"
         now = datetime.now().replace(minute=1)
         today = now.strftime(date_time_format)
-        one_day_ago_1 = (now + relativedelta(days=-1)).strftime(date_time_format)
+        one_day_ago_1 = (now + relativedelta(days=-1)
+                         ).strftime(date_time_format)
         one_day_ago_2 = (now + relativedelta(days=-1, minute=2)).strftime(
             date_time_format
         )
-        two_days_ago = (now + relativedelta(days=-2)).strftime(date_time_format)
-        three_days_ago = (now + relativedelta(days=-3)).strftime(date_time_format)
-        four_days_ago = (now + relativedelta(days=-4)).strftime(date_time_format)
+        two_days_ago = (now + relativedelta(days=-2)
+                        ).strftime(date_time_format)
+        three_days_ago = (now + relativedelta(days=-3)
+                          ).strftime(date_time_format)
+        four_days_ago = (now + relativedelta(days=-4)
+                         ).strftime(date_time_format)
         tomorrow = (now + relativedelta(days=+1)).strftime(date_time_format)
         sorted_dates = sorted(
             (
@@ -189,7 +193,8 @@ class BackupTestCase(unittest.TestCase):
         sorted_dates = []
         for day in range(366, -1, -1):
             sorted_dates.append(
-                prefix + (today + relativedelta(days=-day)).strftime(date_time_format)
+                prefix + (today + relativedelta(days=-day)
+                          ).strftime(date_time_format)
             )
 
         transmitter.get_backup_names_sorted.return_value = sorted_dates
@@ -268,43 +273,6 @@ class BackupTestCase(unittest.TestCase):
                 server_strategy=server_strategy, item_strategy=item_strategy
             ),
             msg="wrong rotation strategy is used",
-        )
-
-    @unittest.mock.patch("os.path.exists")
-    def test_error_when_file_does_not_exist(self, exists):
-        """
-        Test that exception is raised when backup file item on the disk does not exist.
-        """
-        exists1 = "/a/b/c"
-        exists2 = "/d/e/f"
-        nonexistent = "/g/f/h"
-
-        def side_effect(filename):
-            if filename == exists1 or filename == exists2:
-                return True
-            else:
-                return False
-
-        exists.side_effect = side_effect
-
-        # error is not raised when all files exists
-        self.assertIsNone(
-            backup._check_item(
-                FilesBackupItem(
-                    includes=(exists1, exists2), excludes=(), rotation_strategy=None
-                )
-            )
-        )
-
-        # error is raised when any of the files missing
-        self.assertRaises(
-            OSError,
-            backup._check_item,
-            FilesBackupItem(
-                includes=(exists1, exists2),
-                excludes=(nonexistent,),
-                rotation_strategy=None,
-            ),
         )
 
     @unittest.mock.patch("backee.backup.transmitter.SshTransmitter")
