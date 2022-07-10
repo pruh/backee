@@ -14,17 +14,13 @@ class BackupTestCase(unittest.TestCase):
         date_time_format = "%Y-%m-%d-%H-%M"
         now = datetime.now().replace(minute=1)
         today = now.strftime(date_time_format)
-        one_day_ago_1 = (now + relativedelta(days=-1)
-                         ).strftime(date_time_format)
+        one_day_ago_1 = (now + relativedelta(days=-1)).strftime(date_time_format)
         one_day_ago_2 = (now + relativedelta(days=-1, minute=2)).strftime(
             date_time_format
         )
-        two_days_ago = (now + relativedelta(days=-2)
-                        ).strftime(date_time_format)
-        three_days_ago = (now + relativedelta(days=-3)
-                          ).strftime(date_time_format)
-        four_days_ago = (now + relativedelta(days=-4)
-                         ).strftime(date_time_format)
+        two_days_ago = (now + relativedelta(days=-2)).strftime(date_time_format)
+        three_days_ago = (now + relativedelta(days=-3)).strftime(date_time_format)
+        four_days_ago = (now + relativedelta(days=-4)).strftime(date_time_format)
         tomorrow = (now + relativedelta(days=+1)).strftime(date_time_format)
         sorted_dates = sorted(
             (
@@ -193,8 +189,7 @@ class BackupTestCase(unittest.TestCase):
         sorted_dates = []
         for day in range(366, -1, -1):
             sorted_dates.append(
-                prefix + (today + relativedelta(days=-day)
-                          ).strftime(date_time_format)
+                prefix + (today + relativedelta(days=-day)).strftime(date_time_format)
             )
 
         transmitter.get_backup_names_sorted.return_value = sorted_dates

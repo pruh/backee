@@ -86,8 +86,7 @@ def __backup_files_to_server(
 
     transmitter.recreate_links_dir(backup_dir_path, links_dir_path)
 
-    rs = _get_rotation_strategy(
-        server.rotation_strategy, item.rotation_strategy)
+    rs = _get_rotation_strategy(server.rotation_strategy, item.rotation_strategy)
     _remove_old_backups(
         transmitter, server_root_dir_path, rs, date_time_format, date_time_prefix
     )
@@ -136,11 +135,9 @@ def _remove_old_backups(
     yearly_backups = []
     now = date.today()
     for backup in backups:
-        backup_date = __get_date_time(
-            backup, date_time_format, date_time_prefix)
+        backup_date = __get_date_time(backup, date_time_format, date_time_prefix)
         if rotation_strategy.daily > 0 and __is_in_timeframe(
-            backup_date, now, now +
-                relativedelta(days=-rotation_strategy.daily + 1)
+            backup_date, now, now + relativedelta(days=-rotation_strategy.daily + 1)
         ):
             daily_backups.append(backup)
 
@@ -151,8 +148,7 @@ def _remove_old_backups(
             and __is_in_timeframe(
                 backup_date,
                 now,
-                now + relativedelta(months=-
-                                    rotation_strategy.monthly + 1, day=1),
+                now + relativedelta(months=-rotation_strategy.monthly + 1, day=1),
             )
             and not __is_same_backup(
                 monthly_backups, backup_date, date_time_format, date_time_prefix
@@ -168,8 +164,7 @@ def _remove_old_backups(
                 backup_date,
                 now,
                 now
-                + relativedelta(years=-rotation_strategy.yearly +
-                                1, day=1, month=1),
+                + relativedelta(years=-rotation_strategy.yearly + 1, day=1, month=1),
             )
             and not __is_same_backup(
                 yearly_backups, backup_date, date_time_format, date_time_prefix

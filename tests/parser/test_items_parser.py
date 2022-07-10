@@ -28,6 +28,7 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         """
         All possible values are set and parsed correctly.
         """
+
         def exists_side_effect(path):
             return True
 
@@ -56,8 +57,7 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         """
         Only default values are set and parsed correctly.
         """
-        self.assertIsNone(parse_items(
-            None), msg="backup items should be empty")
+        self.assertIsNone(parse_items(None), msg="backup items should be empty")
 
     def test_empty_backup_items_parsed(self):
         """
@@ -172,6 +172,7 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         """
         Test that ~ in path to local file items is expanded
         """
+
         def expanduser_side_effect(path: str):
             if "~" in path:
                 return path.replace("~", "/a")
@@ -185,8 +186,7 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
 
         exists.side_effect = exists_side_effect
 
-        item = {"files": {"includes": [
-            "~/b/c", "/d/e/f"], "excludes": ["~/y/z"]}}
+        item = {"files": {"includes": ["~/b/c", "/d/e/f"], "excludes": ["~/y/z"]}}
         parsed = parse_items(item)
         self.assertEqual(parsed[0].includes, tuple(["/a/b/c", "/d/e/f"]))
         self.assertEqual(parsed[0].excludes, tuple(["/a/y/z"]))
@@ -209,8 +209,12 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
 
         exists.side_effect = side_effect
 
-        item = {"files": {"includes": [
-            exists1, nonexistent1], "excludes": [exists2, nonexistent2]}}
+        item = {
+            "files": {
+                "includes": [exists1, nonexistent1],
+                "excludes": [exists2, nonexistent2],
+            }
+        }
         parsed = parse_items(item)
         self.assertEqual(parsed[0].includes, tuple(["/a/b/c"]))
         self.assertEqual(parsed[0].excludes, tuple(["/d/e/f"]))

@@ -20,13 +20,15 @@ log = logging.getLogger(__name__)
 
 def __parse_files(item: Dict[str, Any]) -> FilesBackupItem:
     if "includes" in item:
-        includes = tuple([os.path.expanduser(x)
-                         for x in item.get("includes") if __path_exists(x)])
+        includes = tuple(
+            [os.path.expanduser(x) for x in item.get("includes") if __path_exists(x)]
+        )
     else:
         includes = ()
     if "excludes" in item:
-        excludes = tuple([os.path.expanduser(x)
-                         for x in item.get("excludes") if __path_exists(x)])
+        excludes = tuple(
+            [os.path.expanduser(x) for x in item.get("excludes") if __path_exists(x)]
+        )
     else:
         excludes = ()
     return FilesBackupItem(
@@ -80,8 +82,7 @@ def __parse_docker_volumes(
         result.append(
             DockerDataVolumesBackupItem(
                 volume=volume,
-                rotation_strategy=parse_rotation_strategy(
-                    item["rotation_strategy"])
+                rotation_strategy=parse_rotation_strategy(item["rotation_strategy"])
                 if "rotation_strategy" in item
                 else None,
             )
