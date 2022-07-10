@@ -1,6 +1,7 @@
 # backee
-[![Build Status](https://travis-ci.com/pruh/backee.svg?branch=master)](https://travis-ci.com/pruh/backee)
-[![Coverage Status](https://coveralls.io/repos/github/pruh/backee/badge.svg?branch=master)](https://coveralls.io/github/pruh/backee?branch=master)
+![example workflow](https://github.com/pruh/backee/actions/workflows/build.yml/badge.svg)
+[![CodeCov](https://codecov.io/gh/pruh/backee/branch/master/graph/badge.svg)](https://codecov.io/gh/pruh/backee)
+![Black](https://img.shields.io/badge/code%20style-black-000000.svg)
 
 backee is a script to back up directories, files, databases and docker data volumes.
 
