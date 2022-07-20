@@ -17,8 +17,7 @@ def backup(name: str, items: Tuple[BackupItem], servers: Tuple[BackupServer]) ->
     """
     Start backup process.
     """
-    for item in items:
-        _check_item(item)
+    _check_items(items)
 
     for server in servers:
         __backup_to_server(items, server)
@@ -231,6 +230,19 @@ def _get_rotation_strategy(
     return item_strategy if item_strategy else server_strategy
 
 
-def _check_item(item: BackupItem):
-    if not isinstance(item, FilesBackupItem):
-        log.info("unsupported item for backup: %s", item.name)
+def _check_items(items: Tuple[BackupItem]):
+    for item in items:
+        if not isinstance(item, FilesBackupItem):
+            log.error("unsupported item for backup: %s", item.name)
+            return None
+
+        item.includes = tuple([x for x in item.get("includes") if _path_exists(x)])
+        item.excludes = tuple([x for x in item.get("excludes") if _path_exists(x)])
+
+
+def _path_exists(path: str) -> bool:
+    if not os.path.exists(path):
+        log.error("file backup item does not exist: %s", path)
+        return False
+
+    return True
