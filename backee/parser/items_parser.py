@@ -20,17 +20,14 @@ log = logging.getLogger(__name__)
 
 def __parse_files(item: Dict[str, Any]) -> FilesBackupItem:
     if "includes" in item:
-        includes = tuple(
-            [os.path.expanduser(x) for x in item.get("includes") if __path_exists(x)]
-        )
+        includes = tuple([os.path.expanduser(x) for x in item.get("includes")])
     else:
         includes = ()
     if "excludes" in item:
-        excludes = tuple(
-            [os.path.expanduser(x) for x in item.get("excludes") if __path_exists(x)]
-        )
+        excludes = tuple([os.path.expanduser(x) for x in item.get("excludes")])
     else:
         excludes = ()
+
     return FilesBackupItem(
         includes=includes,
         excludes=excludes,
@@ -38,14 +35,6 @@ def __parse_files(item: Dict[str, Any]) -> FilesBackupItem:
         if "rotation_strategy" in item
         else None,
     )
-
-
-def __path_exists(path: str) -> bool:
-    if not os.path.exists(path):
-        log.error("file backup item does not exist: %s", path)
-        return False
-
-    return True
 
 
 def __parse_mysql_item(item: Dict[str, Any]) -> MysqlBackupItem:

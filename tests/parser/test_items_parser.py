@@ -23,16 +23,10 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
     Tests for `backee/parser/items_parser.py`.
     """
 
-    @unittest.mock.patch("os.path.exists")
-    def test_file_items_all_values_parsed(self, exists):
+    def test_file_items_all_values_parsed(self):
         """
         All possible values are set and parsed correctly.
         """
-
-        def exists_side_effect(path):
-            return True
-
-        exists.side_effect = exists_side_effect
 
         expected_file_item = self.__create_file_item(
             includes=(
@@ -167,8 +161,7 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
         self.assertEqual((), item.excludes, msg="excludes parsed incirrectly")
 
     @unittest.mock.patch("os.path.expanduser")
-    @unittest.mock.patch("os.path.exists")
-    def test_paths_expanded(self, exists, expanduser):
+    def test_paths_expanded(self, expanduser):
         """
         Test that ~ in path to local file items is expanded
         """
@@ -181,43 +174,10 @@ class ItemsParserTestCase(ConfigMixin, unittest.TestCase):
 
         expanduser.side_effect = expanduser_side_effect
 
-        def exists_side_effect(path):
-            return True
-
-        exists.side_effect = exists_side_effect
-
         item = {"files": {"includes": ["~/b/c", "/d/e/f"], "excludes": ["~/y/z"]}}
         parsed = parse_items(item)
         self.assertEqual(parsed[0].includes, tuple(["/a/b/c", "/d/e/f"]))
         self.assertEqual(parsed[0].excludes, tuple(["/a/y/z"]))
-
-    @unittest.mock.patch("os.path.exists")
-    def test_nonexistent_items_skipped(self, exists):
-        """
-        Test when file backup item does not exists it is removed from the results.
-        """
-        exists1 = "/a/b/c"
-        exists2 = "/d/e/f"
-        nonexistent1 = "/g/h/i"
-        nonexistent2 = "/j/k/l"
-
-        def side_effect(path):
-            if path == exists1 or path == exists2:
-                return True
-            else:
-                return False
-
-        exists.side_effect = side_effect
-
-        item = {
-            "files": {
-                "includes": [exists1, nonexistent1],
-                "excludes": [exists2, nonexistent2],
-            }
-        }
-        parsed = parse_items(item)
-        self.assertEqual(parsed[0].includes, tuple(["/a/b/c"]))
-        self.assertEqual(parsed[0].excludes, tuple(["/d/e/f"]))
 
     def __create_file_item(
         self,
