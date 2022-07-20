@@ -120,7 +120,8 @@ class WebHandler(logging.Handler):
             self.__create_logger().exception("error while sending web log message")
 
     def __format(self, record):
-        return (record.msg[:4000] + "…") if len(record.msg) > 4000 else record.msg
+        msg = super().format(record)
+        return (msg[:4000] + "…") if len(msg) > 4000 else msg
 
     def __make_call(
         self,
