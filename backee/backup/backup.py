@@ -236,8 +236,8 @@ def _check_items(items: Tuple[BackupItem]):
             log.error("unsupported item for backup: %s", item.name)
             return None
 
-        item.includes = tuple([x for x in item.get("includes") if _path_exists(x)])
-        item.excludes = tuple([x for x in item.get("excludes") if _path_exists(x)])
+        item.includes = tuple([x for x in item.includes if _path_exists(x)])
+        item.excludes = tuple([x for x in item.excludes if _path_exists(x)])
 
 
 def _path_exists(path: str) -> bool:
