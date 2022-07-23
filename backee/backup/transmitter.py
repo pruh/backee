@@ -1,6 +1,7 @@
 import logging
 import subprocess
 import re
+import os
 
 from typing import Optional, Tuple
 
@@ -134,13 +135,23 @@ class SshTransmitter(Transmitter):
         if result != "0":
             raise OSError(f"Cannot rename directory {prev_name} to {new_name}")
 
+    def __path_exists(self, path: str, excludes: bool) -> bool:
+        if not os.path.exists(path):
+            if excludes:
+                log.error("excludes item does not exist: %s", path)
+            else:
+                log.error("file backup item does not exist: %s", path)
+            return False
+
+        return True
+
     def transmit(
         self, links_dir_path: str, item: FilesBackupItem, remote_path: str
     ) -> None:
         link_options = self.__get_link_dir_options(links_dir_path)
         ssh_optons = self.__get_rsync_ssh_options()
-        excludes = " ".join(f'--exclude "{s}"' for s in item.excludes)
-        includes = " ".join(f'"{s}"' for s in item.includes)
+        excludes = " ".join(f'--exclude "{s}"' for s in item.excludes if self.__path_exists(s, True))
+        includes = " ".join(f'"{s}"' for s in item.includes if self.__path_exists(s, False))
 
         rsync_cmd = (
             f"rsync --archive --progress --compress {ssh_optons} "
