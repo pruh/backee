@@ -234,4 +234,3 @@ def _check_items(items: Tuple[BackupItem]):
     for item in items:
         if not isinstance(item, FilesBackupItem):
             log.error("unsupported backup item: %s", item.name)
-

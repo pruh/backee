@@ -150,8 +150,12 @@ class SshTransmitter(Transmitter):
     ) -> None:
         link_options = self.__get_link_dir_options(links_dir_path)
         ssh_optons = self.__get_rsync_ssh_options()
-        excludes = " ".join(f'--exclude "{s}"' for s in item.excludes if self.__path_exists(s, True))
-        includes = " ".join(f'"{s}"' for s in item.includes if self.__path_exists(s, False))
+        excludes = " ".join(
+            f'--exclude "{s}"' for s in item.excludes if self.__path_exists(s, True)
+        )
+        includes = " ".join(
+            f'"{s}"' for s in item.includes if self.__path_exists(s, False)
+        )
 
         rsync_cmd = (
             f"rsync --archive --progress --compress {ssh_optons} "

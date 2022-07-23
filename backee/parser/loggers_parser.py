@@ -68,7 +68,7 @@ def __parse_file_size(file_size: Optional[Union[int, str]]) -> int:
     if isinstance(file_size, int):
         return file_size
 
-    suffixes = {"b": 1, "k": 2 ** 10, "m": 2 ** 20, "g": 2 ** 30}
+    suffixes = {"b": 1, "k": 2**10, "m": 2**20, "g": 2**30}
 
     # get numbers in from
     num = ""
