@@ -233,16 +233,4 @@ def _get_rotation_strategy(
 def _check_items(items: Tuple[BackupItem]):
     for item in items:
         if not isinstance(item, FilesBackupItem):
-            log.error("unsupported item for backup: %s", item.name)
-            return None
-
-        item.includes = tuple([x for x in item.includes if _path_exists(x)])
-        item.excludes = tuple([x for x in item.excludes if _path_exists(x)])
-
-
-def _path_exists(path: str) -> bool:
-    if not os.path.exists(path):
-        log.error("file backup item does not exist: %s", path)
-        return False
-
-    return True
+            log.error("unsupported backup item: %s", item.name)
