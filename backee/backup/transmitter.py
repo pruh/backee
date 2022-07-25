@@ -23,6 +23,8 @@ class SshTransmitter(Transmitter):
     def __init__(self, server: SshBackupServer, ssh_client: SSHClient = None):
         self.__server = server
 
+        self.__wildcard_check = re.compile('([*?[])')
+
         deps = ("rsync",)
         self.__check_deps(deps)
 
@@ -136,7 +138,10 @@ class SshTransmitter(Transmitter):
             raise OSError(f"Cannot rename directory {prev_name} to {new_name}")
 
     def __path_exists(self, path: str, excludes: bool) -> bool:
-        if not os.path.exists(path):
+        if self.__wildcard_check.search(path) is not None:
+            log.debug("skipping existence check for path with wildcards: %s", path)
+            return True
+        elif not os.path.exists(path):
             if excludes:
                 log.error("excludes item does not exist: %s", path)
             else:
