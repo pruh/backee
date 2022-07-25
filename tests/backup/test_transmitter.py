@@ -34,6 +34,29 @@ class SshTransmitterTestCase(unittest.TestCase):
         self.assertTrue(subprocess.called)
 
     @mock.patch("subprocess.Popen")
+    def test_wildcards_backup_verified(self, subprocess):
+        item = FilesBackupItem(
+            includes=(("/a/b/*.db"),),
+            excludes=(("/a/b/*.log"),),
+            rotation_strategy=None,
+        )
+        server = SshBackupServer(
+            name="name",
+            rotation_strategy=RotationStrategy(0, 0, 0),
+            location="/location",
+            hostname="hostname",
+            port=22,
+            username="username",
+            key_path=None,
+        )
+
+        subprocess.return_value = self.__get_subprocess_mock(stdout=("abc",))
+
+        transmitter = SshTransmitter(server)
+        self.assertTrue(transmitter.verify_backup(item, "/remote_path"))
+        self.assertTrue(subprocess.called)
+
+    @mock.patch("subprocess.Popen")
     def test_backup_verified_warning(self, subprocess):
         item = FilesBackupItem(
             includes=(("/a/b/c"),), excludes=(("/a/b/c/d"),), rotation_strategy=None
@@ -84,7 +107,7 @@ class SshTransmitterTestCase(unittest.TestCase):
         ssh.exec_command.return_value = tuple([None, stdout, stderr])
 
         transmitter = SshTransmitter(server=Mock(), ssh_client=ssh)
-        self.assertEquals(
+        self.assertEqual(
             tuple(["a", "b", "c"]), transmitter.get_backup_names_sorted("/remote_path")
         )
 
