@@ -107,7 +107,7 @@ class SshTransmitterTestCase(unittest.TestCase):
         ssh.exec_command.return_value = tuple([None, stdout, stderr])
 
         transmitter = SshTransmitter(server=Mock(), ssh_client=ssh)
-        self.assertEquals(
+        self.assertEqual(
             tuple(["a", "b", "c"]), transmitter.get_backup_names_sorted("/remote_path")
         )
 
