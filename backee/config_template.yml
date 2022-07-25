@@ -53,8 +53,10 @@ backup_items: # optional
   files: # optional
     includes: # optional
       - /path/to/include
+      - /path/with/wildcard/*.db
     excludes: # optional
       - /path/to/include/exclude
+      - /path/with/wildcard/*.log
 
   databases: # optional
     - type: mysql
