@@ -23,7 +23,7 @@ class SshTransmitter(Transmitter):
     def __init__(self, server: SshBackupServer, ssh_client: SSHClient = None):
         self.__server = server
 
-        self.__wildcard_check = re.compile('([*?[])')
+        self.__wildcard_check = re.compile("([*?[])")
 
         deps = ("rsync",)
         self.__check_deps(deps)
