@@ -10,6 +10,8 @@ from backee.model.rotation_strategy import RotationStrategy
 
 from backee.backup.transmitter import SshTransmitter
 
+from backee.backup import constants
+
 
 class SshTransmitterTestCase(unittest.TestCase):
     @mock.patch("subprocess.Popen")
@@ -111,14 +113,42 @@ class SshTransmitterTestCase(unittest.TestCase):
             tuple(["a", "b", "c"]), transmitter.get_backup_names_sorted("/remote_path")
         )
 
-    def __get_subprocess_mock(self, stdout: str, stderr: str = "") -> Mock:
+    @mock.patch("subprocess.Popen")
+    def test_backup_skipped_for_vanished_items(self, subprocess):
+        item = FilesBackupItem(
+            includes=(("/a/b/c"),), excludes=(("/a/b/c/d"),), rotation_strategy=None
+        )
+        server = SshBackupServer(
+            name="name",
+            rotation_strategy=RotationStrategy(0, 0, 0),
+            location="/location",
+            hostname="hostname",
+            port=22,
+            username="username",
+            key_path=None,
+        )
+
+        subprocess.return_value = self.__get_subprocess_mock(
+            stdout=("abc",), exit_code=124
+        )
+
+        transmitter = SshTransmitter(server)
+        self.assertTrue(transmitter.verify_backup(item, "/remote_path"))
+        self.assertTrue(subprocess.called)
+
+    def __get_subprocess_mock(
+        self,
+        stdout: str,
+        stderr: str = "",
+        exit_code: int = 0,
+    ) -> Mock:
         process_mock = Mock()
         attrs = {
             "__enter__": Mock(return_value=process_mock),
             "__exit__": Mock(return_value=None),
             "stdout": stdout,
             "stderr": stderr,
-            "wait.return_value": 0,
+            "wait.return_value": exit_code,
         }
         process_mock.configure_mock(**attrs)
         return process_mock
