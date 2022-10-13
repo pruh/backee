@@ -1,5 +1,6 @@
 import unittest
 import subprocess
+from io import TextIOWrapper, BytesIO
 
 from unittest import mock
 from unittest.mock import Mock
@@ -29,7 +30,7 @@ class SshTransmitterTestCase(unittest.TestCase):
             key_path=None,
         )
 
-        subprocess.return_value = self.__get_subprocess_mock(stdout=("abc",))
+        subprocess.return_value = self.__get_subprocess_mock(stdout="abc")
 
         transmitter = SshTransmitter(server)
         self.assertTrue(transmitter.verify_backup(item, "/remote_path"))
@@ -52,7 +53,9 @@ class SshTransmitterTestCase(unittest.TestCase):
             key_path=None,
         )
 
-        subprocess.return_value = self.__get_subprocess_mock(stdout=("abc",))
+        subprocess.return_value = self.__get_subprocess_mock(
+            stdout="abc",
+        )
 
         transmitter = SshTransmitter(server)
         self.assertTrue(transmitter.verify_backup(item, "/remote_path"))
@@ -73,7 +76,9 @@ class SshTransmitterTestCase(unittest.TestCase):
             key_path=None,
         )
 
-        subprocess.return_value = self.__get_subprocess_mock(stdout=(">Xcstpoguax",))
+        subprocess.return_value = self.__get_subprocess_mock(
+            stdout=">Xcstpoguax",
+        )
 
         transmitter = SshTransmitter(server)
         self.assertFalse(transmitter.verify_backup(item, "/remote_path"))
@@ -94,7 +99,9 @@ class SshTransmitterTestCase(unittest.TestCase):
             key_path=None,
         )
 
-        subprocess.return_value = self.__get_subprocess_mock(stdout=(".Xcstpoguax",))
+        subprocess.return_value = self.__get_subprocess_mock(
+            stdout=".Xcstpoguax",
+        )
 
         transmitter = SshTransmitter(server)
         self.assertFalse(transmitter.verify_backup(item, "/remote_path"))
@@ -129,10 +136,10 @@ class SshTransmitterTestCase(unittest.TestCase):
         )
 
         subprocess.return_value = self.__get_subprocess_mock(
-            stdout=("abc",), exit_code=124
+            stdout="abc", exit_code=constants.RSYNC_STATUS_SOURCE_VANISHED
         )
 
-        transmitter = SshTransmitter(server)
+        transmitter = SshTransmitter(server, deps=())
         self.assertTrue(transmitter.verify_backup(item, "/remote_path"))
         self.assertTrue(subprocess.called)
 
@@ -146,8 +153,8 @@ class SshTransmitterTestCase(unittest.TestCase):
         attrs = {
             "__enter__": Mock(return_value=process_mock),
             "__exit__": Mock(return_value=None),
-            "stdout": stdout,
-            "stderr": stderr,
+            "stdout": TextIOWrapper(BytesIO(stdout.encode("utf-8")), "utf8"),
+            "stderr": TextIOWrapper(BytesIO(stderr.encode("utf-8")), "utf8"),
             "wait.return_value": exit_code,
         }
         process_mock.configure_mock(**attrs)

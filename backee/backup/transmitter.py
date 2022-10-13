@@ -21,12 +21,16 @@ class Transmitter(object):
 
 
 class SshTransmitter(Transmitter):
-    def __init__(self, server: SshBackupServer, ssh_client: SSHClient = None):
+    def __init__(
+        self,
+        server: SshBackupServer,
+        ssh_client: SSHClient = None,
+        deps: Tuple[str] = ("rsync",),
+    ):
         self.__server = server
 
         self.__wildcard_check = re.compile("([*?[])")
 
-        deps = ("rsync",)
         self.__check_deps(deps)
 
         if ssh_client is None:
@@ -286,7 +290,7 @@ class SshTransmitter(Transmitter):
 
         return transfer_size
 
-    def __verify_exit_code(self, rsync_proc, remote_path: str) -> None:
+    def __verify_exit_code(self, rsync_proc: subprocess.Popen, remote_path: str) -> None:
         """
         Verify rsync exit code and raises exception if process finished with an error
 
