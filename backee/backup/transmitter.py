@@ -10,6 +10,7 @@ from paramiko import SSHClient, AutoAddPolicy
 from backee.model.servers import SshBackupServer
 from backee.model.items import BackupItem, FilesBackupItem
 from backee.model.rotation_strategy import RotationStrategy
+from backee.backup import constants
 
 
 log = logging.getLogger(__name__)
@@ -20,12 +21,16 @@ class Transmitter(object):
 
 
 class SshTransmitter(Transmitter):
-    def __init__(self, server: SshBackupServer, ssh_client: SSHClient = None):
+    def __init__(
+        self,
+        server: SshBackupServer,
+        ssh_client: SSHClient = None,
+        deps: Tuple[str] = ("rsync",),
+    ):
         self.__server = server
 
         self.__wildcard_check = re.compile("([*?[])")
 
-        deps = ("rsync",)
         self.__check_deps(deps)
 
         if ssh_client is None:
@@ -181,16 +186,7 @@ class SshTransmitter(Transmitter):
             for line in rsync_proc.stdout:
                 log.debug(line.rstrip())
 
-            exit_code = rsync_proc.wait()
-            if exit_code != 0:
-                stderr = "\n".join(
-                    map(lambda s: s.rstrip(), rsync_proc.stderr.readlines())
-                )
-                log.error(
-                    f"rsync finished with non-zero exit code {exit_code} "
-                    f"and stderr: {stderr}"
-                )
-                raise OSError(f"Cannot transfer to {remote_path}")
+            self.__verify_exit_code(rsync_proc, remote_path)
 
     def __get_link_dir_options(self, links_dir_path: str) -> str:
         if self.is_remote_dir_exist(links_dir_path):
@@ -246,19 +242,10 @@ class SshTransmitter(Transmitter):
                     or re.findall(error_pattern, fmt_line)
                 ) and not fmt_line.startswith(false_positive):
                     no_errors = False
-                    log.debug(f"{fmt_line} is different")
+                    log.debug("%s is different", fmt_line)
                     break
 
-            exit_code = rsync_proc.wait()
-            if exit_code != 0:
-                stderr = "\n".join(
-                    map(lambda s: s.rstrip(), rsync_proc.stderr.readlines())
-                )
-                log.error(
-                    f"rsync finished with non-zero exit code {exit_code} "
-                    f"and stderr: {stderr}"
-                )
-                raise OSError(f"Cannot transfer to {remote_path}")
+            self.__verify_exit_code(rsync_proc, remote_path)
 
         return no_errors
 
@@ -296,21 +283,35 @@ class SshTransmitter(Transmitter):
                 log.debug(fmt_line)
                 if line_start in fmt_line:
                     transfer_size = int(re.search("\d+", fmt_line).group())
-                    log.debug(f"transfer size is {transfer_size} bytes")
+                    log.debug("transfer size is %i bytes", transfer_size)
                     break
 
-            exit_code = rsync_proc.wait()
-            if exit_code != 0:
-                stderr = "\n".join(
-                    map(lambda s: s.rstrip(), rsync_proc.stderr.readlines())
-                )
-                log.error(
-                    f"rsync finished with non-zero exit code {exit_code} "
-                    f"and stderr: {stderr}"
-                )
-                raise OSError(f"Cannot transfer to {remote_path}")
+            self.__verify_exit_code(rsync_proc, remote_path)
 
         return transfer_size
+
+    def __verify_exit_code(self, rsync_proc: subprocess.Popen, remote_path: str) -> None:
+        """
+        Verify rsync exit code and raises exception if process finished with an error
+
+        Raises:
+            OSError: if exit code is not RSYNC_STATUS_SOURCE_VANISHED or RSYNC_STATUS_SUCCESS
+        """
+        exit_code = rsync_proc.wait()
+        if exit_code == constants.RSYNC_STATUS_SOURCE_VANISHED:
+            stderr = "\n".join(map(lambda s: s.rstrip(), rsync_proc.stderr.readlines()))
+            log.warning(
+                "source item vanished before rsync was able to copy it over: %s",
+                stderr,
+            )
+        elif exit_code != constants.RSYNC_STATUS_SUCCESS:
+            stderr = "\n".join(map(lambda s: s.rstrip(), rsync_proc.stderr.readlines()))
+            log.error(
+                "rsync finished with non-zero exit code %i and stderr: %s",
+                exit_code,
+                stderr,
+            )
+            raise OSError(f"Cannot transfer to {remote_path}")
 
     def get_disk_space_available(self, remote_path: str) -> int:
         """
