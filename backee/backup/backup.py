@@ -72,7 +72,7 @@ def __backup_files_to_server(
         transmitter.check_temp_dirs(server_root_dir_path, temp_dir_suffix)
 
         transmitter.check_links_dir(
-            server_root_dir_path, item.name, links_dir_path, temp_dir_suffix
+            server_root_dir_path, links_dir_path, temp_dir_suffix
         )
 
     _check_remote_disk_space(

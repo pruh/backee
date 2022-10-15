@@ -4,6 +4,7 @@ from datetime import datetime, date
 from dateutil.relativedelta import relativedelta
 
 from backee.backup import backup
+from backee.backup.transmitter import SshTransmitter, Transmitter
 from backee.model.rotation_strategy import RotationStrategy
 from backee.model.items import FilesBackupItem
 
