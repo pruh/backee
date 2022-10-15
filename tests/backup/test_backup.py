@@ -289,6 +289,34 @@ class BackupTestCase(unittest.TestCase):
             "",
         )
 
+    @unittest.mock.patch("backee.backup.transmitter.SshTransmitter")
+    def test_incomplete_folder_excluded(self, transmitter):
+        """
+        Test when incomplete folder exists in list of backups
+        it is excluded when counting backups to keep
+        """
+        date_time_format = "%Y-%m-%d-%H-%M"
+        now = date.today()
+        first_day_of_year = date(day=1, month=1, year=now.year)
+        today = first_day_of_year.strftime(date_time_format)
+
+        sorted_dates = ((today), (today + "-incomplete"))
+        transmitter.get_backup_names_sorted.return_value = sorted_dates
+        rs = RotationStrategy(daily=0, monthly=0, yearly=0)
+        backup._remove_old_backups(
+            transmitter=transmitter,
+            server_root_dir_path="",
+            rotation_strategy=rs,
+            date_time_format=date_time_format,
+            date_time_prefix="",
+        )
+
+        self.assertCountEqual(
+            ((today),),
+            transmitter.remove_remote_dirs.call_args_list[0][0][0],
+            msg="wrong yearly backups to delete",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()
