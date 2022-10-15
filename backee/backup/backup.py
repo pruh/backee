@@ -133,8 +133,13 @@ def _remove_old_backups(
     monthly_backups = []
     yearly_backups = []
     now = date.today()
+    exclude = set()
     for backup in backups:
         backup_date = __get_date_time(backup, date_time_format, date_time_prefix)
+        if backup_date is None:
+            exclude.add(backup)
+            continue
+
         if rotation_strategy.daily > 0 and __is_in_timeframe(
             backup_date, now, now + relativedelta(days=-rotation_strategy.daily + 1)
         ):
@@ -171,17 +176,17 @@ def _remove_old_backups(
         ):
             yearly_backups.append(backup)
 
-    exclude = set(daily_backups)
+    exclude.update(daily_backups)
     exclude.update(monthly_backups)
     exclude.update(yearly_backups)
 
     to_delete = tuple([x for x in backups if x not in exclude])
 
     if len(to_delete) == 0:
-        log.debug("no outdated backups")
+        log.debug("no old backups")
         return
 
-    log.debug(f"removing outdated backup(s) {to_delete}")
+    log.debug("removing old backup(s) %s", to_delete)
 
     transmitter.remove_remote_dirs(to_delete)
 
@@ -193,13 +198,20 @@ def __is_in_timeframe(
 
 
 def __get_date_time(backup: str, date_time_format: str, date_time_prefix: str) -> date:
+    """
+    Extracts date from the the backup name and returns date object.
+    If passed argument is not convertable to date, None is returned
+    """
     date_time_str = (
         backup.split(date_time_prefix)[-1]
         if date_time_prefix and date_time_prefix in backup
         else backup
     )
 
-    return datetime.strptime(date_time_str, date_time_format).date()
+    try:
+        return datetime.strptime(date_time_str, date_time_format).date()
+    except ValueError:
+        return None
 
 
 def __is_monthly_backup(date_time: date) -> bool:
@@ -221,6 +233,8 @@ def __is_same_backup(
     previous_date_time = __get_date_time(
         already_added[-1], date_time_format, date_time_prefix
     )
+    if previous_date_time is None:
+        return False
     return existing_date == previous_date_time
 
 
