@@ -83,7 +83,6 @@ class SshTransmitter(Transmitter):
     def check_links_dir(
         self,
         server_root_dir_path: str,
-        item_name: str,
         links_dir_path: str,
         temp_dir_suffix: str,
     ) -> None:
@@ -290,7 +289,9 @@ class SshTransmitter(Transmitter):
 
         return transfer_size
 
-    def __verify_exit_code(self, rsync_proc: subprocess.Popen, remote_path: str) -> None:
+    def __verify_exit_code(
+        self, rsync_proc: subprocess.Popen, remote_path: str
+    ) -> None:
         """
         Verify rsync exit code and raises exception if process finished with an error
 
