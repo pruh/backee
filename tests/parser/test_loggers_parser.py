@@ -161,7 +161,7 @@ class LoggersParserTestCase(ConfigMixin, unittest.TestCase):
     @unittest.mock.patch("requests.get")
     def test_web_logger_wildcard_replacements_in_get(self, mock_get):
         """
-        Test that {{ message }} and {{ name }} are replaced in url, headers and body for GET.
+        Test that {{ message }} os replaced in url, headers and body for GET.
         """
         parsed_config = self._get_parsed_config("full_config.yml")
         parsed_web_logger = parsed_config.loggers[2]
@@ -271,10 +271,9 @@ class LoggersParserTestCase(ConfigMixin, unittest.TestCase):
         auth: Optional[Dict[str, str]] = None,
         min_level: int = logging.DEBUG,
         max_level: int = logging.CRITICAL,
-        name: str = "",
     ) -> WebHandler:
 
-        web = WebHandler(method, url, headers, body, auth, name)
+        web = WebHandler(method, url, headers, body, auth)
         web.setLevel(min_level)
         web.addFilter(MaxLevelFilter(max_level))
 
