@@ -17,27 +17,11 @@ class WebHandler(logging.Handler):
         headers: Dict[str, str],
         body: str,
         auth: Optional[Dict[str, str]],
-        name: str,
     ):
-
-        name_pattern = "{{ name }}"
-
         self._method = method
-        self._url = self.__replace_pattern(
-            pattern=name_pattern, new_text=name, original=url
-        )
-        self._headers = (
-            self.__replace_pattern_in_map(
-                pattern=name_pattern, new_text=name, original_dict=headers
-            )
-            if headers
-            else None
-        )
-        self._body = (
-            self.__replace_pattern(pattern=name_pattern, new_text=name, original=body)
-            if body
-            else None
-        )
+        self._url = url
+        self._headers = headers
+        self._body = body
 
         try:
             self._json = json.loads(self._body)

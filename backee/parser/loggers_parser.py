@@ -28,7 +28,7 @@ def __get_log_level(log_level_string: str) -> int:
     return log_levels[log_level_string]
 
 
-def __parse_file_logger(logger: Dict[str, Any], name: str) -> logging.Handler:
+def __parse_file_logger(logger: Dict[str, Any]) -> logging.Handler:
     min_log_level = __get_log_level(logger.get("min_level"))
     min_log_level = logging.DEBUG if min_log_level is None else min_log_level
     max_log_level = __get_log_level(logger.get("max_level"))
@@ -84,7 +84,7 @@ def __parse_file_size(file_size: Optional[Union[int, str]]) -> int:
     return int(num) * multiplier
 
 
-def __parse_web_logger(logger: Dict[str, Any], name: str) -> logging.Handler:
+def __parse_web_logger(logger: Dict[str, Any]) -> logging.Handler:
     min_log_level = __get_log_level(logger.get("min_level"))
     min_log_level = logging.DEBUG if min_log_level is None else min_log_level
     max_log_level = __get_log_level(logger.get("max_level"))
@@ -96,7 +96,7 @@ def __parse_web_logger(logger: Dict[str, Any], name: str) -> logging.Handler:
     body = logger.get("body")
     auth = logger.get("auth")
 
-    weblog = WebHandler(method, url, headers, body, auth, name)
+    weblog = WebHandler(method, url, headers, body, auth)
     weblog.setFormatter(logging.Formatter("%(message)s"))
     weblog.setLevel(min_log_level)
     weblog.addFilter(MaxLevelFilter(max_log_level))
@@ -104,18 +104,18 @@ def __parse_web_logger(logger: Dict[str, Any], name: str) -> logging.Handler:
     return weblog
 
 
-def __parse_logger(loggers: Dict[str, Any], name: str) -> logging.Handler:
+def __parse_logger(loggers: Dict[str, Any]) -> logging.Handler:
     supported_loggers = {"file": __parse_file_logger, "web": __parse_web_logger}
 
     logger_type = loggers["type"]
     if logger_type not in supported_loggers:
         raise KeyError(f"Unkown logger name: '{logger_type}'")
 
-    return supported_loggers[logger_type](loggers, name)
+    return supported_loggers[logger_type](loggers)
 
 
-def parse_loggers(loggers: Tuple[Dict[str, Any]], name: str) -> Tuple[logging.Handler]:
+def parse_loggers(loggers: Tuple[Dict[str, Any]]) -> Tuple[logging.Handler]:
     if loggers is None:
         return ((),)
 
-    return tuple(__parse_logger(x, name) for x in loggers)
+    return tuple(__parse_logger(x) for x in loggers)
