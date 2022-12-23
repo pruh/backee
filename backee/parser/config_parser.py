@@ -31,8 +31,6 @@ def parse_contents(contents: str) -> Config:
         data=yml_config.get("rotation_strategy")
     )
 
-    # raise Exception("test")
-
     return Config(
         name=name,
         loggers=parse_loggers(loggers=yml_config.get("loggers")),
