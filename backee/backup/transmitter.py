@@ -201,6 +201,8 @@ class SshTransmitter(Transmitter):
         """
         Verify if any items are different from the ones in backup
         """
+        log.debug("verifying if any files are different in the backup")
+
         rsync_cmd = self.__get_rsync_command(
             item,
             remote_path,
