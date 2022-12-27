@@ -20,13 +20,13 @@ def main():
 
     setup_default_loggers()
 
-    _get_lock("backee")
-
     args = _get_args()
 
     config = parse_config(args.config)
 
     setup_config_loggers(config.loggers)
+
+    _get_lock("backee")
 
     backup(config.name, config.backup_items, config.backup_servers)
 
@@ -65,7 +65,9 @@ def _get_lock(process_name: str):
         _get_lock._lock_socket.bind("\0" + process_name)
         log.debug("lock acquired")
     except socket.error as socker_error:
-        raise OSError("failed to acquire lock") from socker_error
+        raise OSError(
+            "Only one instance of the script is allowed to run"
+        ) from socker_error
 
 
 if __name__ == "__main__":
