@@ -205,15 +205,19 @@ class BackupTestCase(unittest.TestCase):
 
         to_delete = sorted_dates.copy()
         daily = prefix + today.strftime(date_time_format)
+        to_delete.remove(daily)
+
         monthly = prefix + date(day=1, month=today.month, year=today.year).strftime(
             date_time_format
         )
+        if monthly in to_delete:
+            to_delete.remove(monthly)
+
         yearly = prefix + date(day=1, month=1, year=today.year).strftime(
             date_time_format
         )
-        to_delete.remove(daily)
-        to_delete.remove(monthly)
-        to_delete.remove(yearly)
+        if yearly in to_delete:
+            to_delete.remove(yearly)
 
         self.assertListEqual(
             to_delete,
