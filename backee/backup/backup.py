@@ -1,9 +1,10 @@
 import os
 import logging
 from datetime import datetime, date
-from dateutil.relativedelta import relativedelta
 
 from typing import Tuple, List, Optional
+
+from dateutil.relativedelta import relativedelta
 
 from backee.model.items import BackupItem, FilesBackupItem
 from backee.model.servers import BackupServer, SshBackupServer
@@ -22,11 +23,11 @@ def backup(name: str, items: Tuple[BackupItem], servers: Tuple[BackupServer]) ->
     for server in servers:
         __backup_to_server(items, server)
 
-    log.info(f"{name} was successfully backed up")
+    log.info("%s was successfully backed up", name)
 
 
 def __backup_to_server(items: Tuple[BackupItem], server: BackupServer) -> None:
-    log.debug(f"backup to {server.name}")
+    log.debug("backup to %s", server.name)
 
     transmitter = __create_transmitter(server)
 
@@ -34,9 +35,9 @@ def __backup_to_server(items: Tuple[BackupItem], server: BackupServer) -> None:
         if isinstance(item, FilesBackupItem):
             __backup_files_to_server(transmitter, server, item)
         else:
-            log.info(f"unsupported backup item: {item.name}")
+            log.info("unsupported backup item: %s", item.name)
 
-    log.debug(f"backup to {server.name} finished")
+    log.debug("backup to %s finished", server.name)
 
 
 def __create_transmitter(server: BackupServer) -> Transmitter:
@@ -49,7 +50,7 @@ def __create_transmitter(server: BackupServer) -> Transmitter:
 def __backup_files_to_server(
     transmitter: SshTransmitter, server: SshBackupServer, item: FilesBackupItem
 ) -> None:
-    log.debug(f"backup {item.name}")
+    log.debug("backup %s", item.name)
 
     server_root_dir_path = os.path.join(server.location, item.name, "")
     date_time_prefix = "backup_"
@@ -91,9 +92,9 @@ def __backup_files_to_server(
     )
 
     if transmitter.verify_backup(item, links_dir_path):
-        log.debug(f"{item.name} backup finished")
+        log.debug("%s backup finished", item.name)
     else:
-        log.warning(f"{item.name} backup items differ from original items")
+        log.warning("%s backup items differ from original items", item.name)
 
 
 def _check_remote_disk_space(
@@ -108,7 +109,7 @@ def _check_remote_disk_space(
         links_dir_path=links_dir_path, item=item, remote_path=remote_path
     )
     space_avail = transmitter.get_disk_space_available(server_root_dir_path)
-    log.debug(f"{space_avail} bytes available for {transfer_size} bytes backup")
+    log.debug("%s bytes available for %s bytes backup", space_avail, transfer_size)
     if space_avail < transfer_size:
         raise OSError(
             f"not enough space to backup {item.name}, "
@@ -134,16 +135,16 @@ def _remove_old_backups(
     yearly_backups = []
     now = date.today()
     exclude = set()
-    for backup in backups:
-        backup_date = __get_date_time(backup, date_time_format, date_time_prefix)
+    for b in backups:
+        backup_date = __get_date_time(b, date_time_format, date_time_prefix)
         if backup_date is None:
-            exclude.add(backup)
+            exclude.add(b)
             continue
 
         if rotation_strategy.daily > 0 and __is_in_timeframe(
             backup_date, now, now + relativedelta(days=-rotation_strategy.daily + 1)
         ):
-            daily_backups.append(backup)
+            daily_backups.append(b)
 
         if (
             rotation_strategy.monthly > 0
@@ -158,7 +159,7 @@ def _remove_old_backups(
                 monthly_backups, backup_date, date_time_format, date_time_prefix
             )
         ):
-            monthly_backups.append(backup)
+            monthly_backups.append(b)
 
         if (
             rotation_strategy.yearly > 0
@@ -174,7 +175,7 @@ def _remove_old_backups(
                 yearly_backups, backup_date, date_time_format, date_time_prefix
             )
         ):
-            yearly_backups.append(backup)
+            yearly_backups.append(b)
 
     exclude.update(daily_backups)
     exclude.update(monthly_backups)
@@ -197,15 +198,17 @@ def __is_in_timeframe(
     return last_eligible_date_time <= backup_date <= now
 
 
-def __get_date_time(backup: str, date_time_format: str, date_time_prefix: str) -> date:
+def __get_date_time(
+    backup_name: str, date_time_format: str, date_time_prefix: str
+) -> date:
     """
     Extracts date from the the backup name and returns date object.
     If passed argument is not convertable to date, None is returned
     """
     date_time_str = (
-        backup.split(date_time_prefix)[-1]
-        if date_time_prefix and date_time_prefix in backup
-        else backup
+        backup_name.split(date_time_prefix)[-1]
+        if date_time_prefix and date_time_prefix in backup_name
+        else backup_name
     )
 
     try:
