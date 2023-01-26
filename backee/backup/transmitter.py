@@ -48,7 +48,7 @@ class SshTransmitter(Transmitter):
 
     def create_dir(self, path: str) -> None:
         log.debug("create directory: %s", path)
-        result = self.__execute_ssh_command(f"mkdir -p '{path}'; echo $?")
+        result = self.__execute_ssh_command(f"sudo mkdir -p '{path}'; echo $?")
         if result != "0":
             raise OSError(f"cannot create directory {path}")
 
@@ -63,7 +63,7 @@ class SshTransmitter(Transmitter):
         remove_command = (
             "items=("
             + " ".join(f'"{item}"' for item in dirs_paths)
-            + '); for item in ${items[*]}; do rm -rf "$item"; done'
+            + '); for item in ${items[*]}; do sudo rm -rf "$item"; done'
         )
         result = self.__execute_ssh_command(f"{remove_command}; echo $?")
         if result != "0":
@@ -73,7 +73,7 @@ class SshTransmitter(Transmitter):
         log.debug("checking for temp dirs in %s", backup_dir_path)
 
         result = self.__execute_ssh_command(
-            f"find '{backup_dir_path}' -mindepth 1 -maxdepth 1 -type d -name '*{temp_dir_suffix}' | wc -l"
+            f"sudo find '{backup_dir_path}' -mindepth 1 -maxdepth 1 -type d -name '*{temp_dir_suffix}' | wc -l"
         )
 
         if result != "0":
@@ -116,7 +116,7 @@ class SshTransmitter(Transmitter):
         log.debug("looking for last backup dir in %s", server_root_dir_path)
 
         command = (
-            f"find '{server_root_dir_path}' -mindepth 1 -maxdepth 1 "
+            f"sudo find '{server_root_dir_path}' -mindepth 1 -maxdepth 1 "
             f"-type d ! -name '*{temp_dir_suffix}' "
             "| sort -t- -k1 | tail -1"
         )
@@ -127,7 +127,7 @@ class SshTransmitter(Transmitter):
     def recreate_links_dir(self, last_backup_dir: str, links_dir_path: str) -> None:
         log.debug("re-link %s to %s", last_backup_dir, links_dir_path)
         result = self.__execute_ssh_command(
-            f"rm -f '{links_dir_path}' && ln -s '{last_backup_dir}' '{links_dir_path}'; echo $?"
+            f"sudo rm -f '{links_dir_path}' && sudo ln -s '{last_backup_dir}' '{links_dir_path}'; echo $?"
         )
         if result != "0":
             raise OSError(
@@ -136,7 +136,9 @@ class SshTransmitter(Transmitter):
 
     def rename_dir(self, prev_name: str, new_name: str) -> None:
         log.debug("rename %s to %s", prev_name, new_name)
-        result = self.__execute_ssh_command(f"mv '{prev_name}' '{new_name}'; echo $?")
+        result = self.__execute_ssh_command(
+            f"sudo mv '{prev_name}' '{new_name}'; echo $?"
+        )
         if result != "0":
             raise OSError(f"Cannot rename directory {prev_name} to {new_name}")
 
@@ -194,7 +196,7 @@ class SshTransmitter(Transmitter):
         return f'--rsh="{options}"'
 
     def get_backup_names_sorted(self, server_root_dir_path: str) -> Tuple[str]:
-        find_dirs = f"find {server_root_dir_path} -mindepth 1 -maxdepth 1 -type d | sort -t- -k1"
+        find_dirs = f"sudo find {server_root_dir_path} -mindepth 1 -maxdepth 1 -type d | sort -t- -k1"
         return tuple(self.__execute_ssh_command(find_dirs).split("\n"))
 
     def verify_backup(self, item: FilesBackupItem, remote_path: str) -> bool:
@@ -299,7 +301,7 @@ class SshTransmitter(Transmitter):
         """
         Return available disk space in bytes.
         """
-        cmd = f"df -P -B1 {remote_path} | awk 'NR==2 {{print $4}}'"
+        cmd = f"sudo df -P -B1 {remote_path} | awk 'NR==2 {{print $4}}'"
         return int(self.__execute_ssh_command(cmd))
 
     def __execute_ssh_command(self, command: str) -> str:
