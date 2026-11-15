@@ -1,9 +1,7 @@
 import unittest
-from unittest import mock
 
 from tests.util.config_mixin import ConfigMixin
 
-from backee.parser.config_parser import parse_config
 from backee.model.servers import SshBackupServer
 from backee.model.rotation_strategy import RotationStrategy
 

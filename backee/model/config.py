@@ -5,7 +5,6 @@ from typing import Tuple
 
 from backee.model.servers import BackupServer
 from backee.model.items import BackupItem
-from backee.model.rotation_strategy import RotationStrategy
 
 
 @dataclass

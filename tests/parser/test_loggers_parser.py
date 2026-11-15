@@ -1,4 +1,3 @@
-import os
 import json
 import unittest
 from unittest import mock
@@ -11,7 +10,6 @@ from tests.util.config_mixin import ConfigMixin
 
 from backee.model.web_handler import WebHandler
 from backee.model.max_level_filter import MaxLevelFilter
-from backee.parser.config_parser import parse_config
 
 
 class LoggersParserTestCase(ConfigMixin, unittest.TestCase):

@@ -1,10 +1,7 @@
-import os
 import unittest
 from unittest import mock
 
 from tests.util.config_mixin import ConfigMixin
-
-from backee.parser.config_parser import parse_config
 
 
 class ConfigParserTestCase(ConfigMixin, unittest.TestCase):

@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Tuple, Dict, Optional
+from typing import Tuple, Optional
 from abc import ABC, abstractmethod
 
 from backee.model.db_connectors import DbConnector

@@ -5,7 +5,6 @@ from typing import Tuple
 
 from backee.model.max_level_filter import MaxLevelFilter
 
-
 log = logging.getLogger(__name__)
 
 

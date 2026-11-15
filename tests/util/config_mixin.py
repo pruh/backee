@@ -1,5 +1,4 @@
 import os
-import logging
 from unittest import mock
 
 from backee.parser.config_parser import parse_config
