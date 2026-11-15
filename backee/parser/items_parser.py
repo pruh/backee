@@ -10,10 +10,8 @@ from backee.model.items import (
     DatabaseBackupItem,
     DockerDataVolumesBackupItem,
 )
-from backee.model.rotation_strategy import RotationStrategy
 
 from backee.parser.rotation_strategy_parser import parse_rotation_strategy
-
 
 log = logging.getLogger(__name__)
 
@@ -31,9 +29,11 @@ def __parse_files(item: Dict[str, Any]) -> FilesBackupItem:
     return FilesBackupItem(
         includes=includes,
         excludes=excludes,
-        rotation_strategy=parse_rotation_strategy(item["rotation_strategy"])
-        if "rotation_strategy" in item
-        else None,
+        rotation_strategy=(
+            parse_rotation_strategy(item["rotation_strategy"])
+            if "rotation_strategy" in item
+            else None
+        ),
     )
 
 
@@ -43,9 +43,11 @@ def __parse_mysql_item(item: Dict[str, Any]) -> MysqlBackupItem:
         password=item["password"],
         database=item["database"],
         connector=parse_db_connector(item=item["connection"]),
-        rotation_strategy=parse_rotation_strategy(item["rotation_strategy"])
-        if "rotation_strategy" in item
-        else None,
+        rotation_strategy=(
+            parse_rotation_strategy(item["rotation_strategy"])
+            if "rotation_strategy" in item
+            else None
+        ),
     )
 
 
@@ -64,16 +66,18 @@ def __parse_databases(items: Dict[str, Any]) -> Tuple[DatabaseBackupItem]:
 
 
 def __parse_docker_volumes(
-    item: Dict[str, List[str]]
+    item: Dict[str, List[str]],
 ) -> Tuple[DockerDataVolumesBackupItem]:
     result = []
     for volume in item.get("data_volumes"):
         result.append(
             DockerDataVolumesBackupItem(
                 volume=volume,
-                rotation_strategy=parse_rotation_strategy(item["rotation_strategy"])
-                if "rotation_strategy" in item
-                else None,
+                rotation_strategy=(
+                    parse_rotation_strategy(item["rotation_strategy"])
+                    if "rotation_strategy" in item
+                    else None
+                ),
             )
         )
     return tuple(result)

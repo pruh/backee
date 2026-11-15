@@ -50,9 +50,11 @@ def __replace_global_patters(
             continue
         elif isinstance(v, list):
             config[k] = [
-                __replace_str_global_patters(config=item, patterns=patterns)
-                if isinstance(item, str)
-                else __replace_global_patters(config=item, patterns=patterns)
+                (
+                    __replace_str_global_patters(config=item, patterns=patterns)
+                    if isinstance(item, str)
+                    else __replace_global_patters(config=item, patterns=patterns)
+                )
                 for item in v
             ]
             continue

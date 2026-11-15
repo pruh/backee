@@ -11,7 +11,6 @@ from backee.model.servers import SshBackupServer
 from backee.model.items import FilesBackupItem
 from backee.backup import constants
 
-
 log = logging.getLogger(__name__)
 
 
@@ -221,7 +220,7 @@ class SshTransmitter(Transmitter):
             universal_newlines=True,
         ) as rsync_proc:
             error_pattern = "^[<>]"
-            warn_pattern = "^\."
+            warn_pattern = r"^\."
             # skip warning for directories if their timestamp changed since backup
             false_positive = (".d..t",)
             for line in rsync_proc.stdout:
@@ -264,7 +263,7 @@ class SshTransmitter(Transmitter):
                 fmt_line = line.rstrip()
                 log.debug(fmt_line)
                 if line_start in fmt_line:
-                    transfer_size = int(re.search("\d+", fmt_line).group())
+                    transfer_size = int(re.search(r"\d+", fmt_line).group())
                     log.debug("transfer size is %i bytes", transfer_size)
                     break
 

@@ -1,18 +1,14 @@
 import unittest
-from unittest import mock
 
-from typing import Tuple, Optional
+from typing import Tuple
 
 from backee.model.items import (
-    BackupItem,
     FilesBackupItem,
     MysqlBackupItem,
-    DatabaseBackupItem,
     DockerDataVolumesBackupItem,
 )
 from backee.model.db_connectors import DbConnector, RemoteConnector, DockerConnector
 from backee.model.rotation_strategy import RotationStrategy
-from backee.parser.config_parser import parse_config
 from backee.parser.items_parser import parse_items
 
 from tests.util.config_mixin import ConfigMixin

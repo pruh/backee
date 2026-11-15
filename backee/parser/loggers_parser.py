@@ -20,7 +20,7 @@ def __get_log_level(log_level_string: str) -> int:
         "critical": logging.CRITICAL,
     }
 
-    if not log_level_string in log_levels.keys():
+    if log_level_string not in log_levels.keys():
         raise KeyError(
             f"invalid logging level: {log_level_string} (must be from {log_levels.keys()})"
         )
