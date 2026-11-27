@@ -1,4 +1,4 @@
-pyyaml==6.0.3
+pyyaml==6.0.4
 requests==2.34.2
 paramiko==5.1.0
 python-dateutil==4.0.0
